@@ -10,4 +10,5 @@
 - **Unity** (클라이언트)
 - **JSON** 기반 통신
 
+---
 API 명세서 : https://www.notion.so/API-28d1e89d06718013873fe11c66fd6796?source=copy_link
