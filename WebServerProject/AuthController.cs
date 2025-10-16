@@ -89,5 +89,15 @@ namespace WebServerProject.Controllers
 
             return Ok(new { user.UserId, user.Nickname });
         }
+
+        [HttpGet("check-uid")]
+        public IActionResult CheckUID([FromQuery] string userId)
+        {
+            var user = _db.Users.FirstOrDefault(u => u.UserId == userId);
+            if (user == null)
+                return NotFound("User not found");
+
+            return Ok(new { userId });
+        }
     }
 }

@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 컨트롤러 추가
 builder.Services.AddControllers();
 
-var connectionString = "server=localhost;port=3306;database=gamedb;user=mitjdsusja;password=sungdls200o!";
+var connectionString = "server=localhost;port=3306;database=gamedb;user=root;password=sungdls200o!";
 // DbContext 등록
 builder.Services.AddDbContext<GameDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
