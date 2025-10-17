@@ -23,14 +23,14 @@ namespace WebServerProject.Controllers
         {
             var user = new User
             {
-                UserId = Guid.NewGuid().ToString(),
-                Nickname = "Guest"
+                userId = Guid.NewGuid().ToString(),
+                nickname = "Guest"
             };
 
-            _db.Users.Add(user);
+            _db.users.Add(user);
             _db.SaveChanges();
 
-            return Ok(new { user.UserId });
+            return Ok(new { user.userId });
         }
 
         // ---------------- Google 로그인 ----------------
@@ -77,23 +77,23 @@ namespace WebServerProject.Controllers
         [HttpPost("set-nickname")]
         public IActionResult SetNickname([FromBody] SetNicknameRequest req)
         {
-            var user = _db.Users.FirstOrDefault(u => u.UserId == req.UserId);
+            var user = _db.users.FirstOrDefault(u => u.userId == req.UserId);
             if (user == null)
                 return NotFound("User not found");
 
             if (string.IsNullOrEmpty(req.Nickname))
                 return BadRequest("Nickname is required");
 
-            user.Nickname = req.Nickname;
+            user.nickname = req.Nickname;
             _db.SaveChanges();
 
-            return Ok(new { user.UserId, user.Nickname });
+            return Ok(new { user.userId, user.nickname });
         }
 
         [HttpGet("check-uid")]
         public IActionResult CheckUID([FromQuery] string userId)
         {
-            var user = _db.Users.FirstOrDefault(u => u.UserId == userId);
+            var user = _db.users.FirstOrDefault(u => u.userId == userId);
             if (user == null)
                 return NotFound("User not found");
 

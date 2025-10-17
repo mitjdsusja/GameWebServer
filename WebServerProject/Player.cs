@@ -14,17 +14,17 @@ namespace WebServerProject
         [HttpGet("info")]
         public IActionResult GetPlayerInfo([FromQuery] string userId)
         {
-            var user = _db.Users.FirstOrDefault(u => u.UserId == userId);
+            var user = _db.users.FirstOrDefault(u => u.userId == userId);
             if (user == null) return NotFound("User not found");
 
             return Ok(new
             {
-                user.UserId,
-                user.Nickname,
-                user.Level,
-                user.Gold,
-                user.Diamonds,
-                user.ProfileId,
+                user.userId,
+                user.nickname,
+                user.level,
+                user.gold,
+                user.diamonds,
+                user.profileId,
             });
         }
     }

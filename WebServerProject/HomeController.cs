@@ -13,27 +13,27 @@ namespace WebServerProject.Controllers
         [HttpGet("init-home")]
         public IActionResult InitHome([FromQuery] string userId)
         {
-            var user = _db.Users.FirstOrDefault(u => u.UserId == userId);
+            var user = _db.users.FirstOrDefault(u => u.userId == userId);
             if (user == null) return NotFound("User not found");
 
             return Ok(new
             {
-                user.UserId,
-                user.Nickname,
-                user.Level,
-                user.Gold,
-                user.Diamonds,
-                user.ProfileId,
+                user.userId,
+                user.nickname,
+                user.level,
+                user.gold,
+                user.diamonds,
+                user.profileId,
             });
         }
 
         [HttpGet("check-tutorial")]
         public IActionResult CheckTutorial([FromQuery] string userId)
         {
-            var user = _db.Users.FirstOrDefault(u => u.UserId == userId);
+            var user = _db.users.FirstOrDefault(u => u.userId == userId);
             if (user == null) return NotFound("User not found");
 
-            return Ok(new { user.UserId, user.TutorialCompleted });
+            return Ok(new { user.userId, user.tutorialCompleted });
         }
     }
 }
