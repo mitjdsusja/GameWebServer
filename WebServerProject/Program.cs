@@ -19,4 +19,10 @@ var app = builder.Build();
 app.UseRouting();
 app.MapControllers();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+    db.Database.Migrate(); // 마이그레이션 자동 적용
+}
+
 app.Run("http://0.0.0.0:5000"); // 모바일 기기에서 접근 가능하도록 모든 IP 허용
