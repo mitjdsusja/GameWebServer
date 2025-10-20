@@ -21,16 +21,24 @@ namespace WebServerProject.Controllers
         [HttpPost("guest-login")]
         public IActionResult GuestLogin([FromBody] GuestLoginRequest req)
         {
-            var user = new User
+            try
             {
-                userId = Guid.NewGuid().ToString(),
-                nickname = "Guest"
-            };
+                var user = new User
+                {
+                    userId = Guid.NewGuid().ToString(),
+                    nickname = "Guest"
+                };
 
-            _db.users.Add(user);
-            _db.SaveChanges();
+                _db.users.Add(user);
+                _db.SaveChanges();
 
-            return Ok(new { user.userId });
+                return Ok(new { user.userId });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ GuestLogin Error: {ex.Message}");
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
 
         // ---------------- Google 로그인 ----------------
