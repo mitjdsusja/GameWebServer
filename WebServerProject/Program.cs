@@ -7,9 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 var connectionString = "server=mysql-server;port=3306;database=gamedb;user=root;password=sungdls200o!";
+var serverVersion = new MySqlServerVersion(new Version(8, 0, 0));
+
 // DbContext 등록
 builder.Services.AddDbContext<GameDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+    options.UseMySql(connectionString, serverVersion)
 );
 
 
