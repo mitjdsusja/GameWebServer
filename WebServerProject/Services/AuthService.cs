@@ -26,8 +26,9 @@ namespace WebServerProject.Services
        
         public bool CheckUID(string userId)
         {
-            // UID 확인 로직 (생략)
-            throw new NotImplementedException();
+            bool result = _repo.UserExists(userId);
+
+            return result;
         }
     }
 }
