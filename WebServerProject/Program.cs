@@ -1,10 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebServerProject.Data;
+using WebServerProject.Repositories;
+using WebServerProject.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 컨트롤러 추가
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PlayerService>();
+builder.Services.AddScoped<HomeService>();
+
+builder.Services.AddScoped<PlayerRepository>();
 
 var connectionString = "server=mysql-server;port=3306;database=gamedb;user=root;password=sungdls200o!";
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 0));
