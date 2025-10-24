@@ -27,5 +27,12 @@ namespace WebServerProject.Repositories
         {
             return _db.users.Any(u => u.userId == userId);
         }
+
+        public User GetUserById(string userId)
+        {
+            var user = _db.users.FirstOrDefault(u => u.userId == userId);
+
+            return user;
+        }
     }
 }

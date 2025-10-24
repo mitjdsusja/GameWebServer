@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.Data;
+using WebServerProject.Services;
 
 namespace WebServerProject.Contollers
 {
@@ -8,24 +9,37 @@ namespace WebServerProject.Contollers
 
     public class PlayerController : ControllerBase
     {
-        private readonly GameDbContext _db;
-        public PlayerController(GameDbContext db) => _db = db;
+        private readonly PlayerService _service;
+
+        public PlayerController(PlayerService service)
+        {
+            _service = service;
+        }
 
         [HttpGet("info")]
         public IActionResult GetPlayerInfo([FromQuery] string userId)
         {
-            var user = _db.users.FirstOrDefault(u => u.userId == userId);
-            if (user == null) return NotFound("User not found");
-
-            return Ok(new
+            try
             {
-                user.userId,
-                user.nickname,
-                user.level,
-                user.gold,
-                user.diamonds,
-                user.profileId,
-            });
+                var user = _service.GetPlayerInfo(userId);
+                
+                return Ok(new
+                {
+                    user.userId,
+                    user.nickname,
+                    user.level,
+                    user.gold,
+                    user.diamonds,
+                    user.profileId,
+                });
+            }
+            catch(Exception ex)
+            {
+                if (ex.Message == "User not found")
+                    return NotFound(new { error = ex.Message });
+                else
+                    return StatusCode(500, new { error = ex.Message });
+            }
         }
     }
 }
