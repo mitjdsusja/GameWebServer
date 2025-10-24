@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.Data;
+using WebServerProject.Services;
 
 namespace WebServerProject.Contollers
 {
@@ -7,33 +8,33 @@ namespace WebServerProject.Contollers
     [Route("api/[controller]")]
     public class HomeController : ControllerBase
     {
-        private readonly GameDbContext _db;
-        public HomeController(GameDbContext db) => _db = db;
+        private readonly HomeService _service;
 
-        [HttpGet("init-home")]
-        public IActionResult InitHome([FromQuery] string userId)
+        public HomeController(HomeService service)
         {
-            var user = _db.users.FirstOrDefault(u => u.userId == userId);
-            if (user == null) return NotFound("User not found");
-
-            return Ok(new
-            {
-                user.userId,
-                user.nickname,
-                user.level,
-                user.gold,
-                user.diamonds,
-                user.profileId,
-            });
+            _service = service;
         }
 
+        [HttpGet("init")]
+        public IActionResult InitHome([FromQuery] string userId)
+        {
+            try
+            {
+                return Ok(_service.InitHome(userId));
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message == "User not found")
+                    return NotFound(new { error = ex.Message });
+                else
+                    return StatusCode(500, new { error = ex.Message });
+            }
+        }
+        
         [HttpGet("check-tutorial")]
         public IActionResult CheckTutorial([FromQuery] string userId)
         {
-            var user = _db.users.FirstOrDefault(u => u.userId == userId);
-            if (user == null) return NotFound("User not found");
-
-            return Ok(new { user.userId, user.tutorialCompleted });
+            return Ok(new { });
         }
     }
 }

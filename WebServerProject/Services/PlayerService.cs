@@ -1,4 +1,5 @@
 ﻿using WebServerProject.Data;
+using WebServerProject.Models.DTOs;
 using WebServerProject.Repositories;
 
 namespace WebServerProject.Services
@@ -12,13 +13,22 @@ namespace WebServerProject.Services
             _repo = repo;
         }
 
-        public User GetPlayerInfo(string userId)
+        public PlayerDto GetPlayerInfo(string userId)
         {
             var user = _repo.GetUserById(userId);
             if (user == null)
                 throw new Exception("User not found");
 
-            return user;
+            return new PlayerDto(
+                user.userId,
+                user.nickname,
+                user.level,
+                user.gold,
+                user.diamonds,
+                user.profileId,
+                user.tutorialCompleted,
+                user.createdAt
+            );
         }
     }
 }
