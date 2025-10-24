@@ -2,7 +2,7 @@
 using System.Text.Json;
 using WebServerProject.Data;
 
-namespace WebServerProject.Controllers
+namespace WebServerProject.Contollers
 {
     [ApiController]
     [Route("api/[controller]")]
