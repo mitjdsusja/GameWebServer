@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using WebServerProject.Data;
+using WebServerProject.Services;
 
 namespace WebServerProject.Contollers
 {
@@ -8,13 +8,12 @@ namespace WebServerProject.Contollers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly GameDbContext _db;
+        private readonly AuthService _service;
 
-        public AuthController(GameDbContext db)
+        public AuthController(AuthService service)
         {
-            _db = db;
+            _service = service;
         }
-
         // ---------------- Guest 로그인 ----------------
         public record GuestLoginRequest();
 
@@ -23,15 +22,7 @@ namespace WebServerProject.Contollers
         {
             try
             {
-                var user = new User
-                {
-                    userId = Guid.NewGuid().ToString(),
-                    nickname = "Guest"
-                };
-
-                _db.users.Add(user);
-                _db.SaveChanges();
-
+                var user = _service.GuestLogin();
                 return Ok(new { user.userId });
             }
             catch (Exception ex)
@@ -85,27 +76,22 @@ namespace WebServerProject.Contollers
         [HttpPost("set-nickname")]
         public IActionResult SetNickname([FromBody] SetNicknameRequest req)
         {
-            var user = _db.users.FirstOrDefault(u => u.userId == req.UserId);
-            if (user == null)
-                return NotFound("User not found");
-
-            if (string.IsNullOrEmpty(req.Nickname))
-                return BadRequest("Nickname is required");
-
-            user.nickname = req.Nickname;
-            _db.SaveChanges();
-
-            return Ok(new { user.userId, user.nickname });
+            // TODO : 닉네임 설정 로직 구현
+            return Ok(new {});
         }
 
         [HttpGet("check-uid")]
         public IActionResult CheckUID([FromQuery] string userId)
         {
-            var user = _db.users.FirstOrDefault(u => u.userId == userId);
-            if (user == null)
-                return NotFound("User not found");
-
-            return Ok(new { userId });
+            bool result = _service.CheckUID(userId);
+            if (result == true)
+            {
+                return Ok(new { userId });
+            }
+            else
+            {
+                return NotFound(new { error = "UID not found" });
+            }
         }
     }
 }
