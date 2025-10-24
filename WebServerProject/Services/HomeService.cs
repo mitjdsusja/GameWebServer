@@ -1,4 +1,6 @@
-﻿using WebServerProject.Data;
+﻿using System.Reflection;
+using WebServerProject.Data;
+using WebServerProject.Models.DTOs;
 using WebServerProject.Repositories;
 
 namespace WebServerProject.Services
@@ -12,22 +14,27 @@ namespace WebServerProject.Services
             _playerRepo = playerRepo;
         }
 
-        public class HomeData
-        {
-            public User user { get; set; }
-
-            // 추가적인 홈 초기화 데이터 필드
-        }
-
-        public HomeData InitHome(string userId)
+        public HomeInitResponse InitHome(string userId)
         {
             var user = _playerRepo.GetUserById(userId);
             if (user == null)
                 throw new Exception("User not found");
 
-            return new HomeData
+            // Entity -> PlayerDto 변환
+            var player = new PlayerDto(
+                user.userId,
+                user.nickname,
+                user.level,
+                user.gold,
+                user.diamonds,
+                user.profileId,
+                user.tutorialCompleted,
+                user.createdAt
+            );
+
+            return new HomeInitResponse
             {
-                user = user
+                playerInfo = player,
             };
         }
     }
