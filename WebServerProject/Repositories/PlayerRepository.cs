@@ -22,5 +22,10 @@ namespace WebServerProject.Repositories
             _db.SaveChanges();
             return user;
         }
+
+        public bool UserExists(string userId)
+        {
+            return _db.users.Any(u => u.userId == userId);
+        }
     }
 }

@@ -83,14 +83,19 @@ namespace WebServerProject.Contollers
         [HttpGet("check-uid")]
         public IActionResult CheckUID([FromQuery] string userId)
         {
-            bool result = _service.CheckUID(userId);
-            if (result == true)
+            try
             {
-                return Ok(new { userId });
+                bool exists = _service.CheckUID(userId);
+
+                if (exists)
+                    return Ok(new { userId });
+                else
+                    return NotFound(new { error = "UID not found" });
             }
-            else
+            catch (Exception ex)
             {
-                return NotFound(new { error = "UID not found" });
+                Console.WriteLine($"❌ CheckUID Error: {ex.Message}");
+                return StatusCode(500, new { error = ex.Message });
             }
         }
     }
