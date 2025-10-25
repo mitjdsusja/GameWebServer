@@ -34,5 +34,16 @@ namespace WebServerProject.Repositories
 
             return user;
         }
+
+        public User SetNickname(string userId, string newNickname)
+        {
+            var user = _db.users.FirstOrDefault(u => u.userId == userId);
+            if (user == null)
+                return null;
+
+            user.nickname = newNickname;
+            _db.SaveChanges();
+            return user;
+        }
     }
 }

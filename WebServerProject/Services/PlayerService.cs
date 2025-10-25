@@ -30,5 +30,23 @@ namespace WebServerProject.Services
                 user.createdAt
             );
         }
+
+        public PlayerDto SetNickname(string userId, string newNickname)
+        {
+            var user = _repo.SetNickname(userId, newNickname);
+            if (user == null)
+                throw new Exception("User not found");
+
+            return new PlayerDto(
+                user.userId,
+                user.nickname,
+                user.level,
+                user.gold,
+                user.diamonds,
+                user.profileId,
+                user.tutorialCompleted,
+                user.createdAt
+            );
+        }
     }
 }

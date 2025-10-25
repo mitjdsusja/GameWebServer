@@ -42,5 +42,25 @@ namespace WebServerProject.Contollers
                     return StatusCode(500, new { error = ex.Message });
             }
         }
+
+        public record SetNicknameRequest(string userId, string newNickname);
+
+        [HttpPost("set-nickname")]
+        public IActionResult SetNickname([FromBody] SetNicknameRequest req)
+        {
+            try
+            {
+                var playerDto = _service.SetNickname(req.userId, req.newNickname);
+
+                return Ok(new { playerDto.userId, playerDto.nickname });
+            }
+            catch (Exception ex)
+            { 
+                if (ex.Message == "User not found")
+                    return NotFound(new { error = ex.Message });
+                else
+                    return StatusCode(500, new { error = ex.Message });
+            }
+        }
     }
 }

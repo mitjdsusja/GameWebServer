@@ -71,15 +71,6 @@ namespace WebServerProject.Contollers
             return Ok(new { userId, email, token });
         }
 
-        public record SetNicknameRequest(string UserId, string Nickname);
-
-        [HttpPost("set-nickname")]
-        public IActionResult SetNickname([FromBody] SetNicknameRequest req)
-        {
-            // TODO : 닉네임 설정 로직 구현
-            return Ok(new {});
-        }
-
         [HttpGet("check-uid")]
         public IActionResult CheckUID([FromQuery] string userId)
         {
