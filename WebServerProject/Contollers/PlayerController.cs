@@ -43,14 +43,14 @@ namespace WebServerProject.Contollers
             }
         }
 
-        public record SetNicknameRequest(string userId, string newNickname);
+        public record SetNicknameRequest(string userId, string nickname);
 
         [HttpPost("set-nickname")]
         public IActionResult SetNickname([FromBody] SetNicknameRequest req)
         {
             try
             {
-                var playerDto = _service.SetNickname(req.userId, req.newNickname);
+                var playerDto = _service.SetNickname(req.userId, req.nickname);
 
                 return Ok(new { playerDto.userId, playerDto.nickname });
             }
