@@ -2,6 +2,6 @@
 {
     public class HomeInitResponse
     {
-        public PlayerDto playerInfo;
+        public PlayerDto playerInfo { get; set; }
     }
 }
