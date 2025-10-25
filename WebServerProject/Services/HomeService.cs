@@ -14,9 +14,9 @@ namespace WebServerProject.Services
             _playerRepo = playerRepo;
         }
 
-        public HomeInitResponse InitHome(string userId)
+        public async Task<HomeInitResponse> InitHomeAsync(string userId)
         {
-            var user = _playerRepo.GetUserById(userId);
+            var user = await _playerRepo.GetUserByIdAsync(userId);
             if (user == null)
                 throw new Exception("User not found");
 

@@ -18,11 +18,11 @@ namespace WebServerProject.Contollers
         }
 
         [HttpGet("info")]
-        public IActionResult GetPlayerInfo([FromQuery] string userId)
+        public async Task<IActionResult> GetPlayerInfo([FromQuery] string userId)
         {
             try
             {
-                PlayerDto playerDto = _service.GetPlayerInfo(userId);
+                PlayerDto playerDto = await _service.GetPlayerInfoAsync(userId);
                 
                 return Ok(new
                 {
@@ -46,11 +46,11 @@ namespace WebServerProject.Contollers
         public record SetNicknameRequest(string userId, string nickname);
 
         [HttpPost("set-nickname")]
-        public IActionResult SetNickname([FromBody] SetNicknameRequest req)
+        public async Task<IActionResult> SetNickname([FromBody] SetNicknameRequest req)
         {
             try
             {
-                var playerDto = _service.SetNickname(req.userId, req.nickname);
+                var playerDto = await _service.SetNicknameAsync(req.userId, req.nickname);
 
                 return Ok(new { playerDto.userId, playerDto.nickname });
             }

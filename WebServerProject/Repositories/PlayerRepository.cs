@@ -1,4 +1,5 @@
-﻿using WebServerProject.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using WebServerProject.Data;
 
 namespace WebServerProject.Repositories
 {
@@ -11,7 +12,7 @@ namespace WebServerProject.Repositories
             _db = db;
         }
 
-        public User CreateGuestUser()
+        public async Task<User> CreateGuestUserAsync()
         {
             var user = new User
             {
@@ -19,30 +20,30 @@ namespace WebServerProject.Repositories
                 nickname = "Guest"
             };
             _db.users.Add(user);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return user;
         }
 
-        public bool UserExists(string userId)
+        public async Task<bool> UserExistsAsync(string userId)
         {
-            return _db.users.Any(u => u.userId == userId);
+            return await _db.users.AnyAsync(u => u.userId == userId);
         }
 
-        public User GetUserById(string userId)
+        public async Task<User> GetUserByIdAsync(string userId)
         {
-            var user = _db.users.FirstOrDefault(u => u.userId == userId);
+            var user = await _db.users.FirstOrDefaultAsync(u => u.userId == userId);
 
             return user;
         }
 
-        public User SetNickname(string userId, string newNickname)
+        public async Task<User> SetNicknameAsync(string userId, string newNickname)
         {
-            var user = _db.users.FirstOrDefault(u => u.userId == userId);
+            var user = await _db.users.FirstOrDefaultAsync(u => u.userId == userId);
             if (user == null)
                 return null;
 
             user.nickname = newNickname;
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return user;
         }
     }

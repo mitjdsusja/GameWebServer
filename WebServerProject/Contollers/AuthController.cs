@@ -18,11 +18,11 @@ namespace WebServerProject.Contollers
         public record GuestLoginRequest();
 
         [HttpPost("guest-login")]
-        public IActionResult GuestLogin([FromBody] GuestLoginRequest req)
+        public async Task<IActionResult> GuestLogin([FromBody] GuestLoginRequest req)
         {
             try
             {
-                var user = _service.GuestLogin();
+                var user = await _service.GuestLoginAsync();
                 return Ok(new { user.userId });
             }
             catch (Exception ex)
@@ -72,11 +72,11 @@ namespace WebServerProject.Contollers
         }
 
         [HttpGet("check-uid")]
-        public IActionResult CheckUID([FromQuery] string userId)
+        public async Task<IActionResult> CheckUID([FromQuery] string userId)
         {
             try
             {
-                bool exists = _service.CheckUID(userId);
+                bool exists = await _service.CheckUIDAsync(userId);
 
                 if (exists)
                     return Ok(new { userId });

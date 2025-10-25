@@ -12,21 +12,21 @@ namespace WebServerProject.Services
             _repo = repo;
         }
 
-        public User GuestLogin()
+        public async Task<User> GuestLoginAsync()
         {
             // 필요하다면 추가 검증 로직 가능
-            return _repo.CreateGuestUser();
+            return await _repo.CreateGuestUserAsync();
         }
 
-        public User GoogleLogin(string email)
+        public async Task<User> GoogleLoginAsync(string email)
         {
             // Google 로그인 처리 로직 (생략)
             throw new NotImplementedException();
         }
        
-        public bool CheckUID(string userId)
+        public async Task<bool> CheckUIDAsync(string userId)
         {
-            bool result = _repo.UserExists(userId);
+            bool result = await _repo.UserExistsAsync(userId);
 
             return result;
         }

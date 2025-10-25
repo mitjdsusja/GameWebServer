@@ -13,9 +13,9 @@ namespace WebServerProject.Services
             _repo = repo;
         }
 
-        public PlayerDto GetPlayerInfo(string userId)
+        public async Task<PlayerDto> GetPlayerInfoAsync(string userId)
         {
-            var user = _repo.GetUserById(userId);
+            var user = await _repo.GetUserByIdAsync(userId);
             if (user == null)
                 throw new Exception("User not found");
 
@@ -31,9 +31,9 @@ namespace WebServerProject.Services
             );
         }
 
-        public PlayerDto SetNickname(string userId, string newNickname)
+        public async Task<PlayerDto> SetNicknameAsync(string userId, string newNickname)
         {
-            var user = _repo.SetNickname(userId, newNickname);
+            var user = await _repo.SetNicknameAsync(userId, newNickname);
             if (user == null)
                 throw new Exception("User not found");
 

@@ -16,11 +16,12 @@ namespace WebServerProject.Contollers
         }
 
         [HttpGet("init")]
-        public IActionResult InitHome([FromQuery] string userId)
+        public async Task<IActionResult> InitHome([FromQuery] string userId)
         {
             try
             {
-                return Ok(_service.InitHome(userId));
+                var homeData = await _service.InitHomeAsync(userId);
+                return Ok(homeData);
             }
             catch (Exception ex)
             {
@@ -32,7 +33,7 @@ namespace WebServerProject.Contollers
         }
         
         [HttpGet("check-tutorial")]
-        public IActionResult CheckTutorial([FromQuery] string userId)
+        public async Task<IActionResult> CheckTutorial([FromQuery] string userId)
         {
             return Ok(new { });
         }
