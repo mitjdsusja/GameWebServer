@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.Data;
+using WebServerProject.Models.DTOs;
 using WebServerProject.Services;
 
 namespace WebServerProject.Contollers
@@ -21,16 +22,16 @@ namespace WebServerProject.Contollers
         {
             try
             {
-                var user = _service.GetPlayerInfo(userId);
+                PlayerDto playerDto = _service.GetPlayerInfo(userId);
                 
                 return Ok(new
                 {
-                    user.userId,
-                    user.nickname,
-                    user.level,
-                    user.gold,
-                    user.diamonds,
-                    user.profileId,
+                    playerDto.userId,
+                    playerDto.nickname,
+                    playerDto.level,
+                    playerDto.gold,
+                    playerDto.diamonds,
+                    playerDto.profileId,
                 });
             }
             catch(Exception ex)
