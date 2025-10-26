@@ -14,7 +14,11 @@ builder.Services.AddScoped<HomeService>();
 
 builder.Services.AddScoped<PlayerRepository>();
 
-var connectionString = "server=mysql-server;port=3306;database=gamedb;user=root;password=sungdls200o!";
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
+
+var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser};password={dbPass}";
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 0));
 
 // DbContext 등록
