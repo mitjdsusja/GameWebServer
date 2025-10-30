@@ -24,7 +24,10 @@
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7190;http://localhost:5175",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_HOST": "127.0.0.1",
+        "DB_USER": "root",
+        "DB_PASS": "sungdls200o!"
       }
     },
     "IIS Express": {

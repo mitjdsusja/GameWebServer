@@ -1,0 +1,5 @@
+﻿@ReqeustTest_HostAdress = http://localhost:5000
+
+### Test GET request
+GET {{ReqeustTest_HostAdress}}/api/auth/check-uid?userId=91a3dc0d-3e4f-44c2-8857-0c88054c07f2
+Accept: application/json
