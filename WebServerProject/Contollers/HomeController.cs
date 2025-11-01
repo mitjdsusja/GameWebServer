@@ -18,24 +18,7 @@ namespace WebServerProject.Contollers
         [HttpGet("init")]
         public async Task<IActionResult> InitHome([FromQuery] string userId)
         {
-            try
-            {
-                var homeData = await _service.InitHomeAsync(userId);
-                return Ok(homeData);
-            }
-            catch (Exception ex)
-            {
-                if (ex.Message == "User not found")
-                    return NotFound(new { error = ex.Message });
-                else
-                    return StatusCode(500, new { error = ex.Message });
-            }
-        }
-        
-        [HttpGet("check-tutorial")]
-        public async Task<IActionResult> CheckTutorial([FromQuery] string userId)
-        {
-            return Ok(new { });
+            return Ok();
         }
     }
 }

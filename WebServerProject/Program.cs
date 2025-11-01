@@ -8,11 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 // 컨트롤러 추가
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<PlayerService>();
-builder.Services.AddScoped<HomeService>();
-
-builder.Services.AddScoped<PlayerRepository>();
+builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
+builder.Services.AddSingleton<IAuthTokenService, AuthTokenService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // MySQL 연결 설정
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
@@ -38,4 +37,4 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate(); // 마이그레이션 자동 적용
 }
 
-app.Run("http://0.0.0.0:5000"); // 모바일 기기에서 접근 가능하도록 모든 IP 허용
+app.Run("http://0.0.0.0:5000");

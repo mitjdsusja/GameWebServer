@@ -1,0 +1,50 @@
+﻿@ReqeustTest_HostAdress = http://localhost:5000/api
+
+### 회원가입
+POST {{ReqeustTest_HostAdress}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 로그인
+POST {{ReqeustTest_HostAdress}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123",
+  "deviceId": "device_12345"
+}
+
+### 로그아웃
+POST {{ReqeustTest_HostAdress}}/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "token": "{{auth_token}}"
+}
+
+### 비밀번호 변경
+POST {{ReqeustTest_HostAdress}}/auth/change-password
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "userId": 1,
+  "currentPassword": "password123",
+  "newPassword": "newpassword456"
+}
+
+### 인증이 필요한 API 요청 예시
+POST {{ReqeustTest_HostAdress}}/player/profile
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "playerId": 1
+}

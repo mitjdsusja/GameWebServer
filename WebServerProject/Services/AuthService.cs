@@ -1,35 +1,201 @@
 ﻿using WebServerProject.Data;
 using WebServerProject.Models;
+using WebServerProject.Models.Auth;
+using WebServerProject.Models.Entities;
 using WebServerProject.Repositories;
 
 namespace WebServerProject.Services
 {
-    public class AuthService
+    public interface IAuthService
     {
-        private readonly PlayerRepository _repo;
+        Task<(bool Success, string Message, int? UserId)> RegisterAsync(string username, string email, string password);
+        Task<(bool Success, string Message, AuthToken Token)> LoginAsync(string username, string password, string deviceId);
+        Task<bool> LogoutAsync(string token);
+        Task<bool> LogoutAllDevicesAsync(int userId);
+        Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
+    }
 
-        public AuthService(PlayerRepository repo)
+    public class AuthService : IAuthService
+    {
+        private readonly IUserRepository _userRepository;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly IAuthTokenService _tokenService;
+
+        public AuthService(
+            IUserRepository userRepository,
+            IPasswordHasher passwordHasher,
+            IAuthTokenService tokenService)
         {
-            _repo = repo;
+            _userRepository = userRepository;
+            _passwordHasher = passwordHasher;
+            _tokenService = tokenService;
         }
 
-        public async Task<User> GuestLoginAsync()
+        public async Task<(bool Success, string Message, int? UserId)> RegisterAsync(string username, string email, string password)
         {
-            // 필요하다면 추가 검증 로직 가능
-            return await _repo.CreateGuestUserAsync();
+                    // 사용자 이름 중복 확인
+            var existingUserByUsername = await _userRepository.GetByUsernameAsync(username);
+            if (existingUserByUsername != null)
+            {
+                return (false, "이미 사용 중인 사용자 이름입니다.", null);
+            }
+
+                     // 이메일 중복 확인
+            var existingUserByEmail = await _userRepository.GetByEmailAsync(email);
+            if (existingUserByEmail != null)
+            {
+                return (false, "이미 사용 중인 이메일 주소입니다.", null);
+            }
+
+                    // 비밀번호 유효성 검사
+            if (string.IsNullOrEmpty(password) || password.Length < 8)
+            {
+                return (false, "비밀번호는 최소 8자 이상이어야 합니다.", null);
+            }
+
+            try
+            {
+                             // 비밀번호 해싱
+                var (passwordHash, salt) = _passwordHasher.HashPassword(password);
+
+                             // 새 사용자 생성
+                var newUser = new User
+                {
+                    UserName = username,
+                    Email = email,
+                    PasswordHash = passwordHash,
+                    Salt = salt,
+                    CreatedAt = DateTime.UtcNow,
+                    Status = "active"
+                };
+
+                            // 데이터베이스에 저장
+                int userId = await _userRepository.CreateAsync(newUser);
+
+                return (true, "회원가입이 완료되었습니다.", userId);
+            }
+            catch (Exception ex)
+            {
+                return (false, "회원가입 처리 중 오류가 발생했습니다.", null);
+            }
         }
 
-        public async Task<User> GoogleLoginAsync(string email)
+        public async Task<(bool Success, string Message, AuthToken Token)> LoginAsync(string username, string password, string deviceId)
         {
-            // Google 로그인 처리 로직 (생략)
-            throw new NotImplementedException();
-        }
-       
-        public async Task<bool> CheckUIDAsync(string userId)
-        {
-            bool result = await _repo.UserExistsAsync(userId);
+            try
+            {
+                            // 사용자 조회
+                var user = await _userRepository.GetByUsernameAsync(username);
 
-            return result;
+                if (user == null)
+                {
+                    return (false, "사용자 이름 또는 비밀번호가 올바르지 않습니다.", null);
+                }
+
+                            // 계정 상태 확인
+                if (user.Status != "active")
+                {
+                    return (false, $"계정이 {user.Status} 상태입니다. 관리자에게 문의하세요.", null);
+                }
+
+                            // 비밀번호 검증
+                bool isPasswordValid = _passwordHasher.VerifyPassword(password, user.PasswordHash, user.Salt);
+
+                if (!isPasswordValid)
+                {
+                    return (false, "사용자 이름 또는 비밀번호가 올바르지 않습니다.", null);
+                }
+
+                             // 마지막 로그인 시간 업데이트
+                await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
+
+                             // 인증 토큰 생성
+                var token = await _tokenService.CreateTokenAsync(user, deviceId);
+
+                if (token == null)
+                {
+                    return (false, "인증 토큰 생성에 실패했습니다.", null);
+                }
+
+                return (true, "로그인에 성공했습니다.", token);
+            }
+            catch (Exception ex)
+            {
+                return (false, "로그인 처리 중 오류가 발생했습니다.", null);
+            }
+        }
+
+        public async Task<bool> LogoutAsync(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return false;
+            }
+
+            try
+            {
+                return await _tokenService.RevokeTokenAsync(token);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> LogoutAllDevicesAsync(int userId)
+        {
+            try
+            {
+                return await _tokenService.RevokeAllUserTokensAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+        {
+            try
+            {
+                             // 사용자 조회
+                var user = await _userRepository.GetByIdAsync(userId);
+
+                if (user == null)
+                {
+                    return false;
+                }
+
+                            // 현재 비밀번호 확인
+                bool isCurrentPasswordValid = _passwordHasher.VerifyPassword(
+                    currentPassword, user.PasswordHash, user.Salt);
+
+                if (!isCurrentPasswordValid)
+                {
+                    return false;
+                }
+
+                            // 새 비밀번호 해싱
+                var (passwordHash, salt) = _passwordHasher.HashPassword(newPassword);
+
+                            // 사용자 정보 업데이트
+                user.PasswordHash = passwordHash;
+                user.Salt = salt;
+
+                bool updated = await _userRepository.UpdateAsync(user);
+
+                if (updated)
+                {
+                                   // 모든 기기에서 로그아웃 처리
+                    await _tokenService.RevokeAllUserTokensAsync(userId);
+                }
+
+                return updated;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

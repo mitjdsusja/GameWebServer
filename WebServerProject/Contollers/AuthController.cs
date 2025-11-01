@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+﻿using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.AspNetCore.Mvc;
+using WebServerProject.Models.Auth;
 using WebServerProject.Services;
 
 namespace WebServerProject.Contollers
@@ -8,86 +9,108 @@ namespace WebServerProject.Contollers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly AuthService _service;
+        private readonly IAuthService _authService;
 
-        public AuthController(AuthService service)
+        public AuthController(IAuthService authService)
         {
-            _service = service;
-        }
-        // ---------------- Guest 로그인 ----------------
-        public record GuestLoginRequest();
-
-        [HttpPost("guest-login")]
-        public async Task<IActionResult> GuestLogin([FromBody] GuestLoginRequest req)
-        {
-            try
-            {
-                var user = await _service.GuestLoginAsync();
-                return Ok(new { user.userId });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"❌ GuestLogin Error: {ex.Message}");
-                return StatusCode(500, new { error = ex.Message });
-            }
+            _authService = authService;
         }
 
-        // ---------------- Google 로그인 ----------------
-        public record GoogleLoginRequest(string IdToken);
-
-        [HttpPost("google-login")]
-        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest req)
+        [HttpPost("register")]
+        public async Task<RegisterResponse> Register([FromBody] Models.Auth.RegisterRequest request)
         {
-            if (string.IsNullOrEmpty(req.IdToken))
-                return BadRequest("IdToken is required");
-
-            string email;
-
-            try
+            if (string.IsNullOrEmpty(request.Username) ||
+                string.IsNullOrEmpty(request.Email) ||
+                string.IsNullOrEmpty(request.Password))
             {
-                using var http = new HttpClient();
-                var response = await http.GetStringAsync(
-                    $"https://oauth2.googleapis.com/tokeninfo?id_token={req.IdToken}");
-                var json = JsonSerializer.Deserialize<JsonElement>(response);
-
-                // Web Client ID 검증
-                var aud = json.GetProperty("aud").GetString();
-                if (aud != "여기에_발급받은_Web_Client_ID")
-                    return BadRequest("Invalid client ID");
-
-                email = json.GetProperty("email").GetString();
-            }
-            catch
-            {
-                return BadRequest("Invalid ID Token");
+                return new RegisterResponse
+                {
+                    Success = false,
+                    Message = "사용자 이름, 이메일, 비밀번호는 필수 입력 항목입니다."
+                };
             }
 
-            // 유저 ID 생성 (실제 서비스에서는 DB 확인 후 신규 등록)
-            var userId = email;
+            var (success, message, userId) = await _authService.RegisterAsync(
+                request.Username, request.Email, request.Password);
 
-            // JWT 발급 (테스트용 GUID)
-            var token = Guid.NewGuid().ToString();
-
-            return Ok(new { userId, email, token });
+            return new RegisterResponse
+            {
+                Success = success,
+                Message = message,
+                UserId = userId
+            };
         }
 
-        [HttpGet("check-uid")]
-        public async Task<IActionResult> CheckUID([FromQuery] string userId)
+        [HttpPost("login")]
+        public async Task<LoginResponse> Login([FromBody] Models.Auth.LoginRequest request)
         {
-            try
+            if (string.IsNullOrEmpty(request.Username) ||
+                string.IsNullOrEmpty(request.Password) ||
+                string.IsNullOrEmpty(request.DeviceId))
             {
-                bool exists = await _service.CheckUIDAsync(userId);
+                return new LoginResponse
+                {
+                    Success = false,
+                    Message = "사용자 이름, 비밀번호, 기기 ID는 필수 입력 항목입니다."
+                };
+            }
 
-                if (exists)
-                    return Ok(new { userId });
-                else
-                    return NotFound(new { error = "UID not found" });
-            }
-            catch (Exception ex)
+            var (success, message, token) = await _authService.LoginAsync(
+                request.Username, request.Password, request.DeviceId);
+
+            return new LoginResponse
             {
-                Console.WriteLine($"❌ CheckUID Error: {ex.Message}");
-                return StatusCode(500, new { error = ex.Message });
+                Success = success,
+                Message = message,
+                Token = token?.Token,
+                UserId = token?.UserId,
+                Username = token?.Username,
+                ExpiresAt = token?.ExpiresAt
+            };
+        }
+
+        [HttpPost("logout")]
+        public async Task<LogoutResponse> Logout([FromBody] LogoutRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Token))
+            {
+                return new LogoutResponse
+                {
+                    Success = false,
+                    Message = "토큰이 필요합니다."
+                };
             }
+
+            bool success = await _authService.LogoutAsync(request.Token);
+
+            return new LogoutResponse
+            {
+                Success = success,
+                Message = success ? "로그아웃 되었습니다." : "로그아웃 처리 중 오류가 발생했습니다."
+            };
+        }
+
+        [HttpPost("change-password")]
+        public async Task<ChangePasswordResponse> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            if (string.IsNullOrEmpty(request.CurrentPassword) ||
+                string.IsNullOrEmpty(request.NewPassword))
+            {
+                return new ChangePasswordResponse
+                {
+                    Success = false,
+                    Message = "현재 비밀번호와 새 비밀번호는 필수 입력 항목입니다."
+                };
+            }
+
+            bool success = await _authService.ChangePasswordAsync(
+                request.UserId, request.CurrentPassword, request.NewPassword);
+
+            return new ChangePasswordResponse
+            {
+                Success = success,
+                Message = success ? "비밀번호가 변경되었습니다." : "비밀번호 변경에 실패했습니다."
+            };
         }
     }
 }
