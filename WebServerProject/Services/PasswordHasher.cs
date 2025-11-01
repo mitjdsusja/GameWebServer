@@ -43,7 +43,7 @@ namespace WebServerProject.Services
         {
             byte[] saltBytes = Convert.FromBase64String(salt);
 
-            // 입력받은 비밀번호 해싱
+                    // 입력받은 비밀번호 해싱
             byte[] hashBytes = KeyDerivation.Pbkdf2(
                 password,
                 saltBytes,
@@ -53,7 +53,7 @@ namespace WebServerProject.Services
 
             string computedHash = Convert.ToBase64String(hashBytes);
 
-            // 저장된 해시와 계산된 해시 비교
+                     // 저장된 해시와 계산된 해시 비교
             return passwordHash == computedHash;
         }
     }
