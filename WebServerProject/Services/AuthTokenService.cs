@@ -6,7 +6,7 @@ namespace WebServerProject.Services
 {
     public interface IAuthTokenService
     {
-        Task<AuthToken> CreateTokenAsync(User user, string deviceId);
+        Task<AuthToken> CreateTokenAsync(User user);
         Task<AuthToken> GetTokenAsync(string token);
         Task<bool> ValidateTokenAsync(string token);
         Task<bool> RevokeTokenAsync(string token);
@@ -16,7 +16,7 @@ namespace WebServerProject.Services
 
     public class AuthTokenService : IAuthTokenService
     {
-        public Task<AuthToken> CreateTokenAsync(User user, string deviceId)
+        public Task<AuthToken> CreateTokenAsync(User user)
         {
             throw new NotImplementedException();
         }

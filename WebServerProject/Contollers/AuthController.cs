@@ -45,8 +45,7 @@ namespace WebServerProject.Contollers
         public async Task<LoginResponse> Login([FromBody] Models.Auth.LoginRequest request)
         {
             if (string.IsNullOrEmpty(request.Username) ||
-                string.IsNullOrEmpty(request.Password) ||
-                string.IsNullOrEmpty(request.DeviceId))
+                string.IsNullOrEmpty(request.Password))
             {
                 return new LoginResponse
                 {
@@ -56,7 +55,7 @@ namespace WebServerProject.Contollers
             }
 
             var (success, message, token) = await _authService.LoginAsync(
-                request.Username, request.Password, request.DeviceId);
+                request.Username, request.Password);
 
             return new LoginResponse
             {

@@ -9,7 +9,7 @@ namespace WebServerProject.Services
     public interface IAuthService
     {
         Task<(bool Success, string Message, int? UserId)> RegisterAsync(string username, string email, string password);
-        Task<(bool Success, string Message, AuthToken Token)> LoginAsync(string username, string password, string deviceId);
+        Task<(bool Success, string Message, AuthToken Token)> LoginAsync(string username, string password);
         Task<bool> LogoutAsync(string token);
         Task<bool> LogoutAllDevicesAsync(int userId);
         Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
@@ -80,7 +80,7 @@ namespace WebServerProject.Services
             }
         }
 
-        public async Task<(bool Success, string Message, AuthToken Token)> LoginAsync(string username, string password, string deviceId)
+        public async Task<(bool Success, string Message, AuthToken Token)> LoginAsync(string username, string password)
         {
             try
             {
@@ -110,7 +110,7 @@ namespace WebServerProject.Services
                 await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
 
                              // 인증 토큰 생성
-                var token = await _tokenService.CreateTokenAsync(user, deviceId);
+                var token = await _tokenService.CreateTokenAsync(user);
 
                 if (token == null)
                 {
