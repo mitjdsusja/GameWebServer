@@ -32,21 +32,21 @@ namespace WebServerProject.Services
 
         public async Task<(bool Success, string Message, int? UserId)> RegisterAsync(string username, string email, string password)
         {
-                    // 사용자 이름 중복 확인
+            // 사용자 이름 중복 확인
             var existingUserByUsername = await _userRepository.GetByUsernameAsync(username);
             if (existingUserByUsername != null)
             {
                 return (false, "이미 사용 중인 사용자 이름입니다.", null);
             }
 
-                     // 이메일 중복 확인
+            // 이메일 중복 확인
             var existingUserByEmail = await _userRepository.GetByEmailAsync(email);
             if (existingUserByEmail != null)
             {
                 return (false, "이미 사용 중인 이메일 주소입니다.", null);
             }
 
-                    // 비밀번호 유효성 검사
+            // 비밀번호 유효성 검사
             if (string.IsNullOrEmpty(password) || password.Length < 8)
             {
                 return (false, "비밀번호는 최소 8자 이상이어야 합니다.", null);
@@ -54,10 +54,10 @@ namespace WebServerProject.Services
 
             try
             {
-                             // 비밀번호 해싱
+                // 비밀번호 해싱
                 var (passwordHash, salt) = _passwordHasher.HashPassword(password);
 
-                             // 새 사용자 생성
+                // 새 사용자 생성
                 var newUser = new User
                 {
                     UserName = username,
@@ -68,7 +68,7 @@ namespace WebServerProject.Services
                     Status = "active"
                 };
 
-                            // 데이터베이스에 저장
+                // 데이터베이스에 저장
                 int userId = await _userRepository.CreateAsync(newUser);
 
                 return (true, "회원가입이 완료되었습니다.", userId);
