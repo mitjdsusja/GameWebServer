@@ -14,6 +14,7 @@ builder.Services.AddScoped<HomeService>();
 
 builder.Services.AddScoped<PlayerRepository>();
 
+// MySQL 연결 설정
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
 var dbUser = Environment.GetEnvironmentVariable("DB_USER");
 var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
@@ -22,7 +23,7 @@ var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser}
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 0));
 
 // DbContext 등록
-builder.Services.AddDbContext<GameDbContext>(options =>
+builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseMySql(connectionString, serverVersion)
 );
 
@@ -33,7 +34,7 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
     db.Database.Migrate(); // 마이그레이션 자동 적용
 }
 
