@@ -11,7 +11,6 @@ namespace WebServerProject.Services
         Task<(bool Success, string Message, int? UserId)> RegisterAsync(string username, string email, string password);
         Task<(bool Success, string Message, AuthToken Token)> LoginAsync(string username, string password);
         Task<bool> LogoutAsync(string token);
-        Task<bool> LogoutAllDevicesAsync(int userId);
         Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
     }
 
@@ -135,18 +134,6 @@ namespace WebServerProject.Services
             try
             {
                 return await _tokenService.RevokeTokenAsync(token);
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> LogoutAllDevicesAsync(int userId)
-        {
-            try
-            {
-                return await _tokenService.RevokeAllUserTokensAsync(userId);
             }
             catch (Exception ex)
             {
