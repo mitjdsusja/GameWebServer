@@ -65,7 +65,8 @@ namespace WebServerProject.Services
                 Email = email,
                 PasswordHash = passwordHash,
                 Salt = salt,
-                Status = "active"
+                Status = "active",
+                Stats = new UserStats { }
             };
 
             try
