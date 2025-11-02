@@ -19,8 +19,8 @@ Content-Type: application/json
   "password": "password123"
 }
 
-@auth_token = {{login.response.body.Token}}
 ### 로그아웃
+@auth_token = WDPDR9IgmJ2Wd92ps6S1AA
 POST {{ReqeustTest_HostAdress}}/auth/logout
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
