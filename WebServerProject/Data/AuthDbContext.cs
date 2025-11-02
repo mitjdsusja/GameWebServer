@@ -54,8 +54,32 @@ namespace WebServerProject.Data
                       .HasDatabaseName("idx_email")
                       .IsUnique();
             });
+
+            modelBuilder.Entity<UserStats>(entity =>
+            {
+                entity.ToTable("user_stats");
+
+                entity.HasKey(e => e.UserId);
+
+                entity.Property(e => e.Level)
+                      .HasColumnType("int")
+                      .HasDefaultValue(1)
+                      .IsRequired();
+
+                entity.Property(e => e.Exp)
+                      .HasColumnType("int")
+                      .HasDefaultValue(0)
+                      .IsRequired();
+            });
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Stats)
+                .WithOne(s => s.User)
+                .HasForeignKey<UserStats>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<UserStats> UserStats { get; set; }
     }
 }

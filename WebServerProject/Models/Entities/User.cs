@@ -10,5 +10,8 @@
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
         public string Status { get; set; } = "active";
+
+        // 관계
+        public UserStats Stats { get; set; } = null!;
     }
 }
