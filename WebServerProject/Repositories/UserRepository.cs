@@ -11,7 +11,7 @@ namespace WebServerProject.Repositories
         Task<User> GetByEmailAsync(string email);
         Task<int> CreateAsync(User user);
         Task<bool> UpdateAsync(User user);
-        Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime);
+        Task<bool> UpdateLastLoginAsync(User user, DateTime loginTime);
     }
     public class UserRepository : IUserRepository
     {
@@ -50,12 +50,9 @@ namespace WebServerProject.Repositories
             return await _db.SaveChangesAsync() > 0;
         }
 
-        public async Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime)
+        public async Task<bool> UpdateLastLoginAsync(User user, DateTime loginTime)
         {
-            var user = new User { Id = userId, LastLoginAt = loginTime };
-            _db.Users.Attach(user);
-            _db.Entry(user).Property(u => u.LastLoginAt).IsModified = true;
-
+            user.LastLoginAt = loginTime;
             return await _db.SaveChangesAsync() > 0;
         }
     }

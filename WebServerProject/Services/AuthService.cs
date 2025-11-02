@@ -19,15 +19,18 @@ namespace WebServerProject.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IAuthTokenService _tokenService;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
-            IAuthTokenService tokenService)
+            IAuthTokenService tokenService,
+            ILogger<AuthService> loger)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
+            _logger = loger;
         }
 
         public async Task<(bool Success, string Message, int? UserId)> RegisterAsync(string username, string email, string password)
@@ -105,7 +108,7 @@ namespace WebServerProject.Services
                 }
 
                 // 마지막 로그인 시간 업데이트
-                await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
+                await _userRepository.UpdateLastLoginAsync(user, DateTime.UtcNow);
 
                 // 인증 토큰 생성
                 var token = await _tokenService.CreateTokenAsync(user);
@@ -119,6 +122,7 @@ namespace WebServerProject.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "LoginAsync 중 오류 발생");
                 return (false, "로그인 처리 중 오류가 발생했습니다.", null);
             }
         }
