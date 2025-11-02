@@ -22,34 +22,41 @@ namespace WebServerProject.Repositories
             _db = db;
         }
 
-        public Task<User> GetByIdAsync(int userId)
+        public async Task<User> GetByIdAsync(int userId)
         {
-            throw new NotImplementedException();
+            return await _db.Users.FindAsync(userId);
         }
 
-        public Task<User> GetByUsernameAsync(string username)
+        public async Task<User> GetByUsernameAsync(string username)
         {
-            throw new NotImplementedException();
+            return await _db.Users.FindAsync(username);
         }
 
-        public Task<User> GetByEmailAsync(string email)
+        public async Task<User> GetByEmailAsync(string email)
         {
-            throw new NotImplementedException();
+            return await _db.Users.FindAsync(email);
         }
 
-        public Task<int> CreateAsync(User user)
+        public async Task<int> CreateAsync(User user)
         {
-            throw new NotImplementedException();
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+            return user.Id;
         }
 
-        public Task<bool> UpdateAsync(User user)
+        public async Task<bool> UpdateAsync(User user)
         {
-            throw new NotImplementedException();
+            _db.Users.Update(user);
+            return await _db.SaveChangesAsync() > 0;
         }
 
-        public Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime)
+        public async Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime)
         {
-            throw new NotImplementedException();
+            var user = new User { Id = userId, LastLoginAt = loginTime };
+            _db.Users.Attach(user);
+            _db.Entry(user).Property(u => u.LastLoginAt).IsModified = true;
+
+            return await _db.SaveChangesAsync() > 0;
         }
     }
 }
