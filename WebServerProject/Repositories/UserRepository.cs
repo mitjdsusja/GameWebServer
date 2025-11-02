@@ -29,12 +29,12 @@ namespace WebServerProject.Repositories
 
         public async Task<User> GetByUsernameAsync(string username)
         {
-            return await _db.Users.FindAsync(username);
+            return await _db.Users.FirstOrDefaultAsync(u => u.UserName == username);
         }
 
         public async Task<User> GetByEmailAsync(string email)
         {
-            return await _db.Users.FindAsync(email);
+            return await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<int> CreateAsync(User user)
