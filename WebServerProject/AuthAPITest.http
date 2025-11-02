@@ -19,7 +19,7 @@ Content-Type: application/json
   "password": "password123"
 }
 
-@authToken = {{login.response.body.token}}
+@auth_token = {{login.response.body.token}}
 ### 로그아웃
 POST {{ReqeustTest_HostAdress}}/auth/logout
 Content-Type: application/json
