@@ -62,7 +62,6 @@ namespace WebServerProject.Services
                 Email = email,
                 PasswordHash = passwordHash,
                 Salt = salt,
-                CreatedAt = DateTime.UtcNow,
                 Status = "active"
             };
 
