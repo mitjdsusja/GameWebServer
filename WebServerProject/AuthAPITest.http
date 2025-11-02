@@ -5,8 +5,8 @@ POST {{ReqeustTest_HostAdress}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "testuser",
-  "email": "test@example.com",
+  "username": "testuser2",
+  "email": "test2@example.com",
   "password": "password123"
 }
 
@@ -16,8 +16,7 @@ Content-Type: application/json
 
 {
   "username": "testuser",
-  "password": "password123",
-  "deviceId": "device_12345"
+  "password": "password123"
 }
 
 ### 로그아웃
