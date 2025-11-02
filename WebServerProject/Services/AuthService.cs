@@ -52,22 +52,22 @@ namespace WebServerProject.Services
                 return (false, "비밀번호는 최소 8자 이상이어야 합니다.", null);
             }
 
+            // 비밀번호 해싱
+            var (passwordHash, salt) = _passwordHasher.HashPassword(password);
+
+            // 새 사용자 생성
+            var newUser = new User
+            {
+                UserName = username,
+                Email = email,
+                PasswordHash = passwordHash,
+                Salt = salt,
+                CreatedAt = DateTime.UtcNow,
+                Status = "active"
+            };
+
             try
             {
-                // 비밀번호 해싱
-                var (passwordHash, salt) = _passwordHasher.HashPassword(password);
-
-                // 새 사용자 생성
-                var newUser = new User
-                {
-                    UserName = username,
-                    Email = email,
-                    PasswordHash = passwordHash,
-                    Salt = salt,
-                    CreatedAt = DateTime.UtcNow,
-                    Status = "active"
-                };
-
                 // 데이터베이스에 저장
                 int userId = await _userRepository.CreateAsync(newUser);
 
@@ -83,7 +83,7 @@ namespace WebServerProject.Services
         {
             try
             {
-                            // 사용자 조회
+                // 사용자 조회
                 var user = await _userRepository.GetByUsernameAsync(username);
 
                 if (user == null)
@@ -91,13 +91,13 @@ namespace WebServerProject.Services
                     return (false, "사용자 이름 또는 비밀번호가 올바르지 않습니다.", null);
                 }
 
-                            // 계정 상태 확인
+                // 계정 상태 확인
                 if (user.Status != "active")
                 {
                     return (false, $"계정이 {user.Status} 상태입니다. 관리자에게 문의하세요.", null);
                 }
 
-                            // 비밀번호 검증
+                // 비밀번호 검증
                 bool isPasswordValid = _passwordHasher.VerifyPassword(password, user.PasswordHash, user.Salt);
 
                 if (!isPasswordValid)
@@ -105,10 +105,10 @@ namespace WebServerProject.Services
                     return (false, "사용자 이름 또는 비밀번호가 올바르지 않습니다.", null);
                 }
 
-                             // 마지막 로그인 시간 업데이트
+                // 마지막 로그인 시간 업데이트
                 await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
 
-                             // 인증 토큰 생성
+                // 인증 토큰 생성
                 var token = await _tokenService.CreateTokenAsync(user);
 
                 if (token == null)
