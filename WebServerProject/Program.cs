@@ -10,8 +10,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IAuthTokenService, AuthTokenService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // MySQL 연결 설정
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
