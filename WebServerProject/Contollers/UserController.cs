@@ -21,11 +21,18 @@ namespace WebServerProject.Controllers
         public async Task<IActionResult> GetUserInfo([FromBody] UserInfoRequest req)
         {
             var user = await _userService.GetUserInfoAsync(req.userId);
-
-            return Ok(new UserInfoResponse
+            
+            if(user != null)
             {
-                User = user
-            });
+                return Ok(new UserInfoResponse
+                {
+                    User = user
+                });
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }

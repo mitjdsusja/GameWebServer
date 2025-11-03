@@ -22,7 +22,7 @@ namespace WebServerProject.Services
 
             if (user == null)
             {
-                throw new Exception("사용자를 찾을 수 없습니다.");
+                return null;
             }
 
             var userModel = UserSafeModel.FromUser(user, includeDetails: true);
