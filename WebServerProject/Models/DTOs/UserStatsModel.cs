@@ -2,7 +2,6 @@
 {
     public class UserStatsModel
     {
-        public int UserId { get; set; }
         public int Level { get; set; }
         public int Exp { get; set; }
 
@@ -10,7 +9,6 @@
         {
             return new UserStatsModel
             {
-                UserId = stats.UserId,
                 Level = stats.Level,
                 Exp = stats.Exp
             };

@@ -2,7 +2,6 @@
 {
     public class UserResourcesModel
     {
-        public int UserId { get; set; }
         public int Golds { get; set; }
         public int Diamonds { get; set; }
 
@@ -10,7 +9,6 @@
         {
             return new UserResourcesModel
             {
-                UserId = resources.UserId,
                 Golds = resources.Golds,
                 Diamonds = resources.Diamonds
             };
