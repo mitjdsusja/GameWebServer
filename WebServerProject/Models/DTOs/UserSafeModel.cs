@@ -12,6 +12,7 @@ namespace WebServerProject.Models.DTOs
         public DateTime? LastLoginAt { get; set; }
         public string Status { get; set; }
 
+        public UserProfilesModel? profile { get; set; }
         public UserStatsModel? Stats { get; set; }
         public UserResourcesModel? Resources { get; set; }
 
@@ -29,6 +30,10 @@ namespace WebServerProject.Models.DTOs
 
             if (includeDetails)
             {
+                if(user.Profile != null)
+                {
+                    model.profile = UserProfilesModel.FromUserStats(user.Profile);
+                }
                 if (user.Stats != null)
                     model.Stats = UserStatsModel.FromUserStats(user.Stats);
 

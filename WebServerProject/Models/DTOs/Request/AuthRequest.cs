@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.DTOs
+﻿namespace WebServerProject.Models.DTOs.Request
 {
     public class RegisterRequest
     {
@@ -24,6 +24,4 @@
         public string CurrentPassword { get; set; }
         public string NewPassword { get; set; }
     }
-
-    
 }

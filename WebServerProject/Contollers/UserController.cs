@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebServerProject.Models.DTOs;
+using WebServerProject.Models.DTOs.Request;
+using WebServerProject.Models.DTOs.Response;
 using WebServerProject.Services;
 
 namespace WebServerProject.Controllers

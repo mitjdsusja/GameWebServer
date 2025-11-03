@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.DTOs
+﻿namespace WebServerProject.Models.DTOs.Request
 {
     public class UserInfoRequest
     {

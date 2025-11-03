@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.DTOs
+﻿namespace WebServerProject.Models.DTOs.Response
 {
     public class UserInfoResponse
     {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebServerProject.Models.DTOs;
+using WebServerProject.Models.DTOs.Request;
+using WebServerProject.Models.DTOs.Response;
 using WebServerProject.Services;
 
 namespace WebServerProject.Contollers
@@ -16,7 +17,7 @@ namespace WebServerProject.Contollers
         }
 
         [HttpPost("register")]
-        public async Task<RegisterResponse> Register([FromBody] Models.DTOs.RegisterRequest request)
+        public async Task<RegisterResponse> Register([FromBody] RegisterRequest request)
         {
             if (string.IsNullOrEmpty(request.Username) ||
                 string.IsNullOrEmpty(request.Email) ||
@@ -41,7 +42,7 @@ namespace WebServerProject.Contollers
         }
 
         [HttpPost("login")]
-        public async Task<LoginResponse> Login([FromBody] Models.DTOs.LoginRequest request)
+        public async Task<LoginResponse> Login([FromBody] LoginRequest request)
         {
             if (string.IsNullOrEmpty(request.Username) ||
                 string.IsNullOrEmpty(request.Password))
