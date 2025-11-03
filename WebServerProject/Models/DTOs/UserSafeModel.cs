@@ -12,9 +12,12 @@ namespace WebServerProject.Models.DTOs
         public DateTime? LastLoginAt { get; set; }
         public string Status { get; set; }
 
-        public static UserSafeModel FromUser(User user)
+        public UserStatsModel? Stats { get; set; }
+        public UserResourcesModel? Resources { get; set; }
+
+        public static UserSafeModel FromUser(User user, bool includeDetails = false)
         {
-            return new UserSafeModel
+            var model = new UserSafeModel
             {
                 Id = user.Id,
                 UserName = user.UserName,
@@ -23,6 +26,17 @@ namespace WebServerProject.Models.DTOs
                 LastLoginAt = user.LastLoginAt,
                 Status = user.Status
             };
+
+            if (includeDetails)
+            {
+                if (user.Stats != null)
+                    model.Stats = UserStatsModel.FromUserStats(user.Stats);
+
+                if (user.Resources != null)
+                    model.Resources = UserResourcesModel.FromUserResources(user.Resources);
+            }
+
+            return model;
         }
     }
 }
