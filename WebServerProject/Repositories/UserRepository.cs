@@ -6,9 +6,10 @@ namespace WebServerProject.Repositories
 {
     public interface IUserRepository
     {
-        Task<User> GetByIdAsync(int userId);
-        Task<User> GetByUsernameAsync(string username);
-        Task<User> GetByEmailAsync(string email);
+        Task<User?> GetByIdAsync(int userId);
+        Task<User?> GetByUsernameAsync(string username);
+        Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetFullByIdAsync(int userId);
         Task<int> CreateAsync(User user);
         Task<bool> UpdateAsync(User user);
         Task<bool> UpdateLastLoginAsync(User user, DateTime loginTime);
@@ -22,19 +23,28 @@ namespace WebServerProject.Repositories
             _db = db;
         }
 
-        public async Task<User> GetByIdAsync(int userId)
-        {
+        public async Task<User?> GetByIdAsync(int userId)
+        { 
             return await _db.Users.FindAsync(userId);
         }
 
-        public async Task<User> GetByUsernameAsync(string username)
+        public async Task<User?> GetByUsernameAsync(string username)
         {
             return await _db.Users.FirstOrDefaultAsync(u => u.UserName == username);
         }
 
-        public async Task<User> GetByEmailAsync(string email)
+        public async Task<User?> GetByEmailAsync(string email)
         {
             return await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User?> GetFullByIdAsync(int userId)
+        {
+            return await _db.Users
+                .Include(u => u.Stats)
+                .Include(u => u.Resources)
+                .Include(u => u.Profile)
+                .FirstOrDefaultAsync(u => u.Id == userId);
         }
 
         public async Task<int> CreateAsync(User user)
@@ -55,5 +65,6 @@ namespace WebServerProject.Repositories
             user.LastLoginAt = loginTime;
             return await _db.SaveChangesAsync() > 0;
         }
+
     }
 }
