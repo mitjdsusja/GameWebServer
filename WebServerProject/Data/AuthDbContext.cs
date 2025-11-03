@@ -9,6 +9,7 @@ namespace WebServerProject.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // User 엔티티 구성
             modelBuilder.Entity<User>(entity =>
             {
                 entity.ToTable("users");
@@ -89,6 +90,22 @@ namespace WebServerProject.Data
                         .IsRequired();
             });
 
+            modelBuilder.Entity<UserProfiles>(entity =>
+            {
+                entity.ToTable("user_profiles");
+
+                entity.HasKey(e => e.UserId);
+
+                entity.Property(e => e.Nickname)
+                      .HasColumnType("varchar(50)")
+                      .IsRequired(false);
+
+                entity.Property(e => e.Introduction)
+                      .HasColumnType("text")
+                      .IsRequired(false);
+            });
+
+            // 관계 설정
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Stats)
                 .WithOne(s => s.User)
@@ -100,9 +117,17 @@ namespace WebServerProject.Data
                 .WithOne(r => r.User)
                 .HasForeignKey<UserResources>(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Profile)
+                .WithOne(p => p.User)
+                .HasForeignKey<UserProfiles>(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<User> Users { get; set; }
         public DbSet<UserStats> UserStats { get; set; }
+        public DbSet<UserResources> UserResources { get; set; }
+        public DbSet<UserProfiles> UserProfiles { get; set; }
     }
 }
