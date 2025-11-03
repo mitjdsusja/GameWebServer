@@ -13,5 +13,6 @@
 
         // 관계
         public UserStats Stats { get; set; } = null!;
+        public UserResources Resources { get; set; } = null!;
     }
 }

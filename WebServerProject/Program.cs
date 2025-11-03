@@ -27,7 +27,6 @@ builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseMySql(connectionString, serverVersion)
 );
 
-
 var app = builder.Build();
 app.UseRouting();
 app.MapControllers();

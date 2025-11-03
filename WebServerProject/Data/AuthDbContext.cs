@@ -72,10 +72,33 @@ namespace WebServerProject.Data
                       .IsRequired();
             });
 
+            modelBuilder.Entity<UserResources>(entity =>
+            {
+                entity.ToTable("user_resources");
+
+                entity.HasKey(e => e.UserId);
+
+                entity.Property(e => e.Golds)
+                      .HasColumnType("int")
+                      .HasDefaultValue(0)
+                      .IsRequired();
+
+                entity.Property(e => e.Diamonds)
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .IsRequired();
+            });
+
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Stats)
                 .WithOne(s => s.User)
                 .HasForeignKey<UserStats>(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Resources)
+                .WithOne(r => r.User)
+                .HasForeignKey<UserResources>(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
 
