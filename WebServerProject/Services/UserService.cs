@@ -3,28 +3,31 @@ using WebServerProject.Repositories;
 
 namespace WebServerProject.Services
 {
-    public class UserService
+    public interface IUserService
     {
-        UserRepository _userRepo;
+        Task<UserSafeModel> GetUserInfoAsync(int userId);
+    }
+    public class UserService : IUserService
+    {
+        private readonly IUserRepository _userRepository;
 
-        public UserService(UserRepository repo)
+        public UserService(IUserRepository repo)
         {
-            _userRepo = repo;
+            _userRepository = repo;
         }
 
-        public async Task<UserSafeModel> GetUserAsync(string userId)
+        public async Task<UserSafeModel> GetUserInfoAsync(int userId)
         {
-            
-            return new UserSafeModel(
-                
-            );
-        }
+            var user = await _userRepository.GetFullByIdAsync(userId);
 
-        public async Task<UserSafeModel> SetNicknameAsync(string userId, string newNickname)
-        {
-            return new UserSafeModel(
+            if (user == null)
+            {
+                throw new Exception("사용자를 찾을 수 없습니다.");
+            }
 
-            );
+            var userModel = UserSafeModel.FromUser(user, includeDetails: true);
+
+            return userModel;
         }
     }
 }

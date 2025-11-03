@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.Auth
+﻿namespace WebServerProject.Models.DTOs
 {
     public class RegisterResponse
     {

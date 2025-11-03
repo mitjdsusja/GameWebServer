@@ -1,7 +1,7 @@
-﻿@ReqeustTest_HostAdress = http://localhost:5000/api
+﻿@ReqeustTest_HostAdress = http://localhost:5000/api/auth
 
 ### 회원가입
-POST {{ReqeustTest_HostAdress}}/auth/register
+POST {{ReqeustTest_HostAdress}}/register
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ### 로그인
-POST {{ReqeustTest_HostAdress}}/auth/login
+POST {{ReqeustTest_HostAdress}}/login
 Content-Type: application/json
 
 {
@@ -21,7 +21,7 @@ Content-Type: application/json
 
 ### 로그아웃
 @auth_token = WDPDR9IgmJ2Wd92ps6S1AA
-POST {{ReqeustTest_HostAdress}}/auth/logout
+POST {{ReqeustTest_HostAdress}}/logout
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
@@ -30,7 +30,7 @@ Authorization: Bearer {{auth_token}}
 }
 
 ### 비밀번호 변경
-POST {{ReqeustTest_HostAdress}}/auth/change-password
+POST {{ReqeustTest_HostAdress}}/change-password
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
@@ -38,13 +38,4 @@ Authorization: Bearer {{auth_token}}
   "userId": 1,
   "currentPassword": "password123",
   "newPassword": "newpassword456"
-}
-
-### 인증이 필요한 API 요청 예시
-POST {{ReqeustTest_HostAdress}}/player/profile
-Content-Type: application/json
-Authorization: Bearer {{auth_token}}
-
-{
-  "playerId": 1
 }

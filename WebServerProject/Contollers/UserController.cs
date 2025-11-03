@@ -1,28 +1,29 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebServerProject.Data;
 using WebServerProject.Models.DTOs;
 using WebServerProject.Services;
 
-namespace WebServerProject.Contollers
+namespace WebServerProject.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
 
     public class UserController : ControllerBase
     {
-        private readonly UserService _service;
+        private readonly IUserService _userService;
 
-        public UserController(UserService service)
+        public UserController(IUserService userService)
         {
-            _service = service;
+            _userService = userService;
         }
 
-        [HttpGet("info")]
-        public async Task<IActionResult> GetPlayerInfo([FromQuery] string userId)
+        [HttpPost("info")]
+        public async Task<IActionResult> GetUserInfo([FromBody] UserInfoRequest req)
         {
-            return Ok(new
+            var user = await _userService.GetUserInfoAsync(req.userId);
+
+            return Ok(new UserInfoResponse
             {
-                   
+                User = user
             });
         }
     }

@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
-using WebServerProject.Models.Auth;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebServerProject.Models.DTOs;
 using WebServerProject.Services;
 
 namespace WebServerProject.Contollers
@@ -17,7 +16,7 @@ namespace WebServerProject.Contollers
         }
 
         [HttpPost("register")]
-        public async Task<RegisterResponse> Register([FromBody] Models.Auth.RegisterRequest request)
+        public async Task<RegisterResponse> Register([FromBody] Models.DTOs.RegisterRequest request)
         {
             if (string.IsNullOrEmpty(request.Username) ||
                 string.IsNullOrEmpty(request.Email) ||
@@ -42,7 +41,7 @@ namespace WebServerProject.Contollers
         }
 
         [HttpPost("login")]
-        public async Task<LoginResponse> Login([FromBody] Models.Auth.LoginRequest request)
+        public async Task<LoginResponse> Login([FromBody] Models.DTOs.LoginRequest request)
         {
             if (string.IsNullOrEmpty(request.Username) ||
                 string.IsNullOrEmpty(request.Password))
