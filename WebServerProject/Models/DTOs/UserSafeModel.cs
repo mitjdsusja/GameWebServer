@@ -32,7 +32,7 @@ namespace WebServerProject.Models.DTOs
             {
                 if(user.Profile != null)
                 {
-                    model.Profile = UserProfilesModel.FromUserStats(user.Profile);
+                    model.Profile = UserProfilesModel.FromUserProfiles(user.Profile);
                 }
                 if (user.Stats != null)
                     model.Stats = UserStatsModel.FromUserStats(user.Stats);

@@ -5,7 +5,7 @@
         public string Nickname { get; set; }
         public string Introduction { get; set; }
 
-        public static UserProfilesModel FromUserStats(Entities.UserProfiles profile)
+        public static UserProfilesModel FromUserProfile(Entities.UserProfiles profile)
         {
             return new UserProfilesModel
             {
