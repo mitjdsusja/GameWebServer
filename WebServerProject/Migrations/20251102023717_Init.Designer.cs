@@ -11,7 +11,7 @@ using WebServerProject.Data;
 
 namespace WebServerProject.Migrations
 {
-    [DbContext(typeof(AuthDbContext))]
+    [DbContext(typeof(UserDbContext))]
     [Migration("20251102023717_Init")]
     partial class Init
     {

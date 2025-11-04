@@ -10,7 +10,7 @@ using WebServerProject.Data;
 
 namespace WebServerProject.Migrations
 {
-    [DbContext(typeof(AuthDbContext))]
+    [DbContext(typeof(UserDbContext))]
     partial class AuthDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -11,7 +11,7 @@ using WebServerProject.Data;
 
 namespace WebServerProject.Migrations
 {
-    [DbContext(typeof(AuthDbContext))]
+    [DbContext(typeof(UserDbContext))]
     [Migration("20251102075953_AddUserStatsTable")]
     partial class AddUserStatsTable
     {
