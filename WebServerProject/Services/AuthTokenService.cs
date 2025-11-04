@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using WebServerProject.Models.Auth;
-using WebServerProject.Models.Entities;
+using WebServerProject.Models.Entities.User;
 
 namespace WebServerProject.Services
 {

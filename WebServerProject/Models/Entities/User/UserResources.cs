@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.Entities
+﻿namespace WebServerProject.Models.Entities.User
 {
     public class UserResources
     {

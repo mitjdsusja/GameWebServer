@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebServerProject.Data;
-using WebServerProject.Models.Entities;
+using WebServerProject.Models.Entities.User;
 
 namespace WebServerProject.Repositories
 {

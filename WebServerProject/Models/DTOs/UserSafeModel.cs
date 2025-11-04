@@ -1,4 +1,4 @@
-﻿using WebServerProject.Models.Entities;
+﻿using WebServerProject.Models.Entities.User;
 
 namespace WebServerProject.Models.DTOs
 {
