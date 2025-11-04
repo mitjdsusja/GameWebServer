@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using WebServerProject.Models.DTOs;
 using WebServerProject.Models.DTOs.Request;
 using WebServerProject.Models.DTOs.Response;
 using WebServerProject.Services;
@@ -20,14 +21,11 @@ namespace WebServerProject.Controllers
         [HttpPost("info")]
         public async Task<IActionResult> GetUserInfo([FromBody] UserInfoRequest req)
         {
-            var user = await _userService.GetUserInfoAsync(req.userId);
+            UserSafeModel user = await _userService.GetUserInfoAsync(req.userId);
             
             if(user != null)
             {
-                return Ok(new UserInfoResponse
-                {
-                    User = user
-                });
+                return Ok(user);
             }
             else
             {
