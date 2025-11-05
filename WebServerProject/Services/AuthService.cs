@@ -1,7 +1,5 @@
-﻿using WebServerProject.Data;
-using WebServerProject.Models;
-using WebServerProject.Models.Auth;
-using WebServerProject.Models.Entities;
+﻿using WebServerProject.Models.Auth;
+using WebServerProject.Models.Entities.User;
 using WebServerProject.Repositories;
 
 namespace WebServerProject.Services
