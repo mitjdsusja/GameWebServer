@@ -98,7 +98,7 @@ namespace WebServerProject.Repositories
         {
             var affected = await _db.Query("users")
                 .Where("id", userId)
-                .UpdateAsync(new { last_login_at = loginTime });
+                .UpdateAsync(new { lastLoginAt = loginTime });
 
             return affected > 0;
         }
