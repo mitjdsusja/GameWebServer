@@ -24,7 +24,10 @@ var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser}
 var serverVersion = new MySqlServerVersion(new Version(8, 0, 0));
 
 // DbContext 등록
-builder.Services.AddDbContext<AuthDbContext>(options =>
+builder.Services.AddDbContext<UserDbContext>(options =>
+    options.UseMySql(connectionString, serverVersion)
+);
+builder.Services.AddDbContext<CharacterDbContext>(options =>
     options.UseMySql(connectionString, serverVersion)
 );
 
@@ -34,7 +37,7 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
     db.Database.Migrate(); // 마이그레이션 자동 적용
 }
 

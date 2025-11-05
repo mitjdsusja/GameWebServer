@@ -16,9 +16,9 @@ namespace WebServerProject.Repositories
     }
     public class UserRepository : IUserRepository
     {
-        private readonly AuthDbContext _db;
+        private readonly UserDbContext _db;
 
-        public UserRepository(AuthDbContext db)
+        public UserRepository(UserDbContext db)
         {
             _db = db;
         }

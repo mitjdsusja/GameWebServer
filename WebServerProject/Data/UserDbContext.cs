@@ -3,9 +3,9 @@ using WebServerProject.Models.Entities.User;
 
 namespace WebServerProject.Data
 {
-    public class AuthDbContext : DbContext
+    public class UserDbContext : DbContext
     {
-        public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
+        public UserDbContext(DbContextOptions<UserDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
