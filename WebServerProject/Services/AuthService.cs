@@ -34,14 +34,14 @@ namespace WebServerProject.Services
         public async Task<(bool Success, string Message, int? UserId)> RegisterAsync(string username, string email, string password)
         {
             // 사용자 이름 중복 확인
-            var existingUserByUsername = await _userRepository.GetByUsernameAsync(username);
+            var existingUserByUsername = await _userRepository.GetUserByUsernameAsync(username);
             if (existingUserByUsername != null)
             {
                 return (false, "이미 사용 중인 사용자 이름입니다.", null);
             }
 
             // 이메일 중복 확인
-            var existingUserByEmail = await _userRepository.GetByEmailAsync(email);
+            var existingUserByEmail = await _userRepository.GetUserByEmailAsync(email);
             if (existingUserByEmail != null)
             {
                 return (false, "이미 사용 중인 이메일 주소입니다.", null);
@@ -85,7 +85,7 @@ namespace WebServerProject.Services
             try
             {
                 // 사용자 조회
-                var user = await _userRepository.GetByUsernameAsync(username);
+                var user = await _userRepository.GetUserByUsernameAsync(username);
 
                 if (user == null)
                 {
@@ -107,7 +107,7 @@ namespace WebServerProject.Services
                 }
 
                 // 마지막 로그인 시간 업데이트
-                await _userRepository.UpdateLastLoginAsync(user, DateTime.UtcNow);
+                await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
 
                 // 인증 토큰 생성
                 var token = await _tokenService.CreateTokenAsync(user);
@@ -148,7 +148,7 @@ namespace WebServerProject.Services
             try
             {
                              // 사용자 조회
-                var user = await _userRepository.GetByIdAsync(userId);
+                var user = await _userRepository.GetUserByIdAsync(userId);
 
                 if (user == null)
                 {

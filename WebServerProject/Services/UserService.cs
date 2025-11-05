@@ -18,9 +18,25 @@ namespace WebServerProject.Services
 
         public async Task<UserSafeModel> GetUserInfoAsync(int userId)
         {
-            var user = await _userRepository.GetFullByIdAsync(userId);
+            var user = await _userRepository.GetUserByIdAsync(userId);
 
             if (user == null)
+            {
+                return null;
+            }
+
+            user.Stats = await _userRepository.GetUserStatsByIdAsync(userId);
+            if (user.Stats == null)
+            {
+                return null;
+            }
+            user.Profile = await _userRepository.GetUserProfilesByIdAsync(userId);
+            if (user.Profile == null)
+            {
+                return null;
+            }
+            user.Resources = await _userRepository.GetUserResourcesByIdAsync(userId);
+            if (user.Resources == null)
             {
                 return null;
             }
