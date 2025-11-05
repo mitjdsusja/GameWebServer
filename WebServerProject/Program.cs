@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WebServerProject.Data;
+﻿using MySqlConnector;
+using SqlKata.Compilers;
+using SqlKata.Execution;
 using WebServerProject.Repositories;
 using WebServerProject.Services;
 
@@ -21,24 +22,17 @@ var dbUser = Environment.GetEnvironmentVariable("DB_USER");
 var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
 
 var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser};password={dbPass}";
-var serverVersion = new MySqlServerVersion(new Version(8, 0, 0));
 
-// DbContext 등록
-builder.Services.AddDbContext<UserDbContext>(options =>
-    options.UseMySql(connectionString, serverVersion)
-);
-builder.Services.AddDbContext<CharacterDbContext>(options =>
-    options.UseMySql(connectionString, serverVersion)
-);
+// SQLKata 초기화
+var connection = new MySqlConnection(connectionString);
+var compiler = new MySqlCompiler();
+var queryFactory = new QueryFactory(connection, compiler);
+
+// DI 등록
+builder.Services.AddSingleton<QueryFactory>(queryFactory);
 
 var app = builder.Build();
 app.UseRouting();
 app.MapControllers();
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
-    db.Database.Migrate(); // 마이그레이션 자동 적용
-}
 
 app.Run("http://0.0.0.0:5000");
