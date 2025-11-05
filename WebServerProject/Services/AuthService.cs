@@ -111,6 +111,8 @@ namespace WebServerProject.Services
 
                 // 인증 토큰 생성
                 var token = await _tokenService.CreateTokenAsync(user);
+                // 인증 토큰 서버 저장
+                //
 
                 if (token == null)
                 {
