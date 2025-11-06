@@ -59,12 +59,11 @@ namespace WebServerProject.Services
             // 새 사용자 생성
             var newUser = new User
             {
-                UserName = username,
-                Email = email,
-                PasswordHash = passwordHash,
-                Salt = salt,
-                Status = "active",
-                Stats = new UserStats { }
+                username = username,
+                email = email,
+                password_hash = passwordHash,
+                salt = salt,
+                status = "active",
             };
 
             try
@@ -93,13 +92,13 @@ namespace WebServerProject.Services
                 }
 
                 // 계정 상태 확인
-                if (user.Status != "active")
+                if (user.status != "active")
                 {
-                    return (false, $"계정이 {user.Status} 상태입니다. 관리자에게 문의하세요.", null);
+                    return (false, $"계정이 {user.status} 상태입니다. 관리자에게 문의하세요.", null);
                 }
 
                 // 비밀번호 검증
-                bool isPasswordValid = _passwordHasher.VerifyPassword(password, user.PasswordHash, user.Salt);
+                bool isPasswordValid = _passwordHasher.VerifyPassword(password, user.password_hash, user.salt);
 
                 if (!isPasswordValid)
                 {
@@ -107,7 +106,7 @@ namespace WebServerProject.Services
                 }
 
                 // 마지막 로그인 시간 업데이트
-                await _userRepository.UpdateLastLoginAsync(user.Id, DateTime.UtcNow);
+                await _userRepository.UpdateLastLoginAsync(user.id, DateTime.UtcNow);
 
                 // 인증 토큰 생성
                 var token = await _tokenService.CreateTokenAsync(user);
@@ -159,7 +158,7 @@ namespace WebServerProject.Services
 
                             // 현재 비밀번호 확인
                 bool isCurrentPasswordValid = _passwordHasher.VerifyPassword(
-                    currentPassword, user.PasswordHash, user.Salt);
+                    currentPassword, user.password_hash, user.salt);
 
                 if (!isCurrentPasswordValid)
                 {
@@ -170,8 +169,8 @@ namespace WebServerProject.Services
                 var (passwordHash, salt) = _passwordHasher.HashPassword(newPassword);
 
                             // 사용자 정보 업데이트
-                user.PasswordHash = passwordHash;
-                user.Salt = salt;
+                user.password_hash = passwordHash;
+                user.salt = salt;
 
                 bool updated = await _userRepository.UpdateAsync(user);
 

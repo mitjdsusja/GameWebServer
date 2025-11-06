@@ -2,11 +2,8 @@
 {
     public class UserResources
     {
-        public int UserId { get; set; }
-        public int Golds { get; set; }
-        public int Diamonds { get; set; } = 1;
-
-        // 관계
-        public User User { get; set; } = null!;
+        public int user_id { get; set; }
+        public int golds { get; set; }
+        public int diamonds { get; set; } = 1;
     }
 }

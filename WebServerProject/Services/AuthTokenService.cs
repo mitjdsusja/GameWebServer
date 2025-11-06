@@ -27,8 +27,8 @@ namespace WebServerProject.Services
             var token = new AuthToken
             {
                 Token = tokenString,
-                UserId = user.Id,
-                Username = user.UserName,
+                UserId = user.id,
+                Username = user.username,
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow.Add(_tokenExpiry)
             };

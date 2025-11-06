@@ -4,14 +4,12 @@ namespace WebServerProject.Models.Entities.Master
 {
     public class CharacterTemplate
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string? Description { get; set; }
-        public string Rarity { get; set; } = "Common";
-        public int BaseHp { get; set; }
-        public int BaseAttack { get; set; }
-        public int BaseDefense { get; set; }
-
-        public ICollection<UserCharacter> UserCharacters { get; set; } = new List<UserCharacter>();
+        public int id { get; set; }
+        public string name { get; set; } = null!;
+        public string? description { get; set; }
+        public string rarity { get; set; } = "Common";
+        public int base_hp { get; set; }
+        public int base_attack { get; set; }
+        public int Base_defense { get; set; }
     }
 }

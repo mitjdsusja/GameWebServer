@@ -6,41 +6,23 @@ namespace WebServerProject.Models.DTOs
     public class UserSafeModel
     {
         public int Id { get; set; }
-        public string UserName { get; set; }
+        public string Username { get; set; }
         public string Email { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
         public string Status { get; set; }
 
-        public UserProfilesModel? Profile { get; set; }
-        public UserStatsModel? Stats { get; set; }
-        public UserResourcesModel? Resources { get; set; }
-
-        public static UserSafeModel FromUser(User user, bool includeDetails = false)
+        public static UserSafeModel FromUser(User user)
         {
             var model = new UserSafeModel
             {
-                Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                CreatedAt = user.CreatedAt,
-                LastLoginAt = user.LastLoginAt,
-                Status = user.Status
+                Id = user.id,
+                Username = user.username,
+                Email = user.email,
+                CreatedAt = user.created_at,
+                LastLoginAt = user.last_login_at,
+                Status = user.status
             };
-
-            if (includeDetails)
-            {
-                if(user.Profile != null)
-                {
-                    model.Profile = UserProfilesModel.FromUserProfiles(user.Profile);
-                }
-                if (user.Stats != null)
-                    model.Stats = UserStatsModel.FromUserStats(user.Stats);
-
-                if (user.Resources != null)
-                    model.Resources = UserResourcesModel.FromUserResources(user.Resources);
-            }
-
             return model;
         }
     }

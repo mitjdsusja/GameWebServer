@@ -11,8 +11,8 @@ namespace WebServerProject.Models.DTOs
         {
             return new UserResourcesModel
             {
-                Golds = resources.Golds,
-                Diamonds = resources.Diamonds
+                Golds = resources.golds,
+                Diamonds = resources.diamonds
             };
         }
     }

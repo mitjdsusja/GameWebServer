@@ -5,7 +5,7 @@ namespace WebServerProject.Services
 {
     public interface IUserService
     {
-        Task<UserSafeModel> GetUserInfoAsync(int userId);
+        Task<(UserSafeModel, UserStatsModel, UserProfilesModel, UserResourcesModel)?> GetUserInfoAsync(int userId);
     }
     public class UserService : IUserService
     {
@@ -16,34 +16,26 @@ namespace WebServerProject.Services
             _userRepository = repo;
         }
 
-        public async Task<UserSafeModel> GetUserInfoAsync(int userId)
+        public async Task<(UserSafeModel, UserStatsModel, UserProfilesModel, UserResourcesModel)?> GetUserInfoAsync(int userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
-
             if (user == null)
-            {
                 return null;
-            }
 
-            user.Stats = await _userRepository.GetUserStatsByIdAsync(userId);
-            if (user.Stats == null)
-            {
-                return null;
-            }
-            user.Profile = await _userRepository.GetUserProfilesByIdAsync(userId);
-            if (user.Profile == null)
-            {
-                return null;
-            }
-            user.Resources = await _userRepository.GetUserResourcesByIdAsync(userId);
-            if (user.Resources == null)
-            {
-                return null;
-            }
+            var stats = await _userRepository.GetUserStatsByIdAsync(userId);
+            var profile = await _userRepository.GetUserProfilesByIdAsync(userId);
+            var resources = await _userRepository.GetUserResourcesByIdAsync(userId);
 
-            var userModel = UserSafeModel.FromUser(user, includeDetails: true);
+            // 하나라도 없으면 null 반환
+            if (stats == null || profile == null || resources == null)
+                return null;
 
-            return userModel;
+            var userModel = UserSafeModel.FromUser(user);
+            var userStats = UserStatsModel.FromUserStats(stats);
+            var userProfiles = UserProfilesModel.FromUserProfiles(profile);
+            var userResources = UserResourcesModel.FromUserResources(resources);
+
+            return (userModel, userStats, userProfiles, userResources);
         }
     }
 }

@@ -2,17 +2,13 @@
 {
     public class User
     {
-        public int Id { get; set; }
-        public string UserName { get; set; } = null!;
-        public string Email { get; set; } = null!;
-        public string PasswordHash { get; set; } = null!;
-        public string Salt { get; set; } = null!;
-        public DateTime CreatedAt { get; set; }
-        public DateTime? LastLoginAt { get; set; }
-        public string Status { get; set; } = "active";
-
-        public UserStats Stats { get; set; } = null!;
-        public UserResources Resources { get; set; } = null!;
-        public UserProfiles Profile { get; set; } = null!;
+        public int id { get; set; }
+        public string username { get; set; } = null!;
+        public string email { get; set; } = null!;
+        public string password_hash { get; set; } = null!;
+        public string salt { get; set; } = null!;
+        public DateTime created_at { get; set; }
+        public DateTime? last_login_at { get; set; }
+        public string status { get; set; } = "active";
     }
 }

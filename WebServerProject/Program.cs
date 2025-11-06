@@ -15,6 +15,8 @@ builder.Services.AddSingleton<IAuthTokenService, AuthTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICharacterService, CharacterService>();
+builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 
 // MySQL 연결 설정
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");

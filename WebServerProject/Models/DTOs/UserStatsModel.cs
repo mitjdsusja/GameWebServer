@@ -11,8 +11,8 @@ namespace WebServerProject.Models.DTOs
         {
             return new UserStatsModel
             {
-                Level = stats.Level,
-                Exp = stats.Exp
+                Level = stats.level,
+                Exp = stats.exp
             };
         }
     }

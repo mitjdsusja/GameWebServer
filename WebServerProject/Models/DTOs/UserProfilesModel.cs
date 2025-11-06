@@ -11,8 +11,8 @@ namespace WebServerProject.Models.DTOs
         {
             return new UserProfilesModel
             {
-                Nickname = profile.Nickname,
-                Introduction = profile.Introduction,
+                Nickname = profile.nickname,
+                Introduction = profile.introduction,
             };
         }
     }

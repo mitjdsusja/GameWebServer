@@ -48,21 +48,21 @@ namespace WebServerProject.Repositories
         public async Task<UserStats> GetUserStatsByIdAsync(int userId)
         {
             return await _db.Query("user_stats")
-                            .Where("userId", userId)
+                            .Where("user_id", userId)
                             .FirstOrDefaultAsync<UserStats>();
         }
 
         public async Task<UserProfiles> GetUserProfilesByIdAsync(int userId)
         {
             return await _db.Query("user_profiles")
-                            .Where("userId", userId)
+                            .Where("user_id", userId)
                             .FirstOrDefaultAsync<UserProfiles>();
         }
 
         public async Task<UserResources> GetUserResourcesByIdAsync(int userId)
         {
             return await _db.Query("user_resources")
-                            .Where("userId", userId)
+                            .Where("user_id", userId)
                             .FirstOrDefaultAsync<UserResources>();
         }
 
@@ -70,11 +70,11 @@ namespace WebServerProject.Repositories
         {
             var id = await _db.Query("users").InsertGetIdAsync<int>(new
             {
-                username = user.UserName,
-                email = user.Email,
-                password = user.PasswordHash,
+                username = user.username,
+                email = user.email,
+                password = user.password_hash,
                 created_at = DateTime.UtcNow,
-                last_login_at = user.LastLoginAt
+                last_login_at = user.last_login_at
             });
             return id;
         }
@@ -82,13 +82,13 @@ namespace WebServerProject.Repositories
         public async Task<bool> UpdateAsync(User user)
         {
             var affected = await _db.Query("users")
-                .Where("id", user.Id)
+                .Where("id", user.id)
                 .UpdateAsync(new
                 {
-                    username = user.UserName,
-                    email = user.Email,
-                    password = user.PasswordHash,
-                    last_login_at = user.LastLoginAt
+                    username = user.username,
+                    email = user.email,
+                    password = user.password_hash,
+                    last_login_at = user.last_login_at
                 });
 
             return affected > 0;
@@ -98,7 +98,7 @@ namespace WebServerProject.Repositories
         {
             var affected = await _db.Query("users")
                 .Where("id", userId)
-                .UpdateAsync(new { lastLoginAt = loginTime });
+                .UpdateAsync(new { last_login_at = loginTime });
 
             return affected > 0;
         }

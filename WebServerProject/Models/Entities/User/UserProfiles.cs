@@ -2,11 +2,8 @@
 {
     public class UserProfiles
     {
-        public int UserId { get; set; }
-        public string Nickname { get; set; }
-        public string Introduction { get; set; }
-
-        // 관계
-        public User User { get; set; } = null!;
+        public int user_id { get; set; }
+        public string nickname { get; set; }
+        public string introduction { get; set; }
     }
 }

@@ -19,18 +19,29 @@ namespace WebServerProject.Controllers
         }
 
         [HttpPost("info")]
-        public async Task<IActionResult> GetUserInfo([FromBody] UserInfoRequest req)
+        public async Task<UserInfoResponse> GetUserInfo([FromBody] UserInfoRequest req)
         {
-            UserSafeModel user = await _userService.GetUserInfoAsync(req.userId);
+            var userTuple = await _userService.GetUserInfoAsync(req.userId);
             
-            if(user != null)
+            if(userTuple == null)
             {
-                return Ok(user);
+                return new UserInfoResponse
+                {
+                    success = false,
+                    message = "유저 정보 요청 실패"
+                };
             }
-            else
+
+            var (user, stats, profiles, resources) = userTuple.Value;
+
+            return new UserInfoResponse
             {
-                return BadRequest();
-            }
+                success = true,
+                user = user,
+                stats = stats,
+                profiles = profiles,
+                resources = resources
+            };
         }
     }
 }
