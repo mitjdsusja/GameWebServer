@@ -6,7 +6,7 @@
 ## 기술 스택
 - **C# / .NET 9**
 - **ASP.NET Core Web API**
-- **Entity Framework Core** (MySQL 연동)
+- **SQLKata** (MySQL 연동)
 - **Unity** (클라이언트)
 - **JSON** 기반 통신
 
