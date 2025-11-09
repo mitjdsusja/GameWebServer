@@ -19,9 +19,12 @@ namespace WebServerProject.Contollers
         [HttpPost("draw")]
         public async Task<GachaResponse> Draw([FromBody] GachaRequest req)
         {
-            var result = await _gachaService.DrawAsync(req.userId);
+            var result = await _gachaService.DrawAsync(req.gachaId, req.userId);
 
-            return result;
+            return new GachaResponse
+            {
+
+            };
         }
     }
 }
