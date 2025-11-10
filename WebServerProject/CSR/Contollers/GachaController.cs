@@ -50,11 +50,21 @@ namespace WebServerProject.CSR.Contollers
         {
             var result = await _gachaService.DrawAsync(req.gachaCode, req.userId);
 
+            if(result == null)
+            {
+                return new GachaDrawResponse
+                {
+                    success = false,
+                    message = "가챠 뽑기에 실패했습니다."
+                };
+            }
 
             return new GachaDrawResponse
             {
                 success = result.Success,
-                message = result.Message
+                message = result.Message,
+                drawnItem = result.DrawnItem,
+                remainingResources = result.RemainingResources
             };
         }
     }

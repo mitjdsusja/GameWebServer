@@ -1,6 +1,7 @@
 ﻿using System.Reflection.Metadata.Ecma335;
 using WebServerProject.CSR.Repositories;
 using WebServerProject.Models.DTOs.Gacha;
+using WebServerProject.Models.DTOs.User;
 using WebServerProject.Models.Entities.Gacha;
 using WebServerProject.Models.Gacha;
 
@@ -70,12 +71,13 @@ namespace WebServerProject.CSR.Services
                     Message = "유저 정보가 없습니다."
                 };
             }
-            else if(resourse.diamonds < 100)
+            else if(resourse.diamond < 100)
             {
                 return new GachaDrawResultDTO
                 {
                     Success = false,
-                    Message = "다이아몬드가 부족합니다."
+                    Message = "다이아몬드가 부족합니다. 남은 다이아 : " + resourse.diamond,
+                    RemainingResources = UserResourcesDTO.FromUserResources(resourse)
                 };
             }
 
@@ -110,8 +112,8 @@ namespace WebServerProject.CSR.Services
                 DrawnItem = GachaPoolDTO.FromGachaPool(selectedItem),
                 RemainingResources = new Models.DTOs.User.UserResourcesDTO
                 {
-                    Golds = resourse.golds,
-                    Diamonds = resourse.diamonds - 100,
+                    Gold = resourse.gold,
+                    Diamond = resourse.diamond - 100,
                 }
             };
         }

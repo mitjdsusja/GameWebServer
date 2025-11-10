@@ -3,7 +3,7 @@
     public class UserResources
     {
         public int user_id { get; set; }
-        public int golds { get; set; }
-        public int diamonds { get; set; } = 1;
+        public int gold { get; set; }
+        public int diamond { get; set; }
     }
 }
