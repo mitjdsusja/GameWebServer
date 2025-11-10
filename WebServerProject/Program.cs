@@ -1,8 +1,8 @@
 ﻿using MySqlConnector;
 using SqlKata.Compilers;
 using SqlKata.Execution;
-using WebServerProject.Repositories;
-using WebServerProject.Services;
+using WebServerProject.CSR.Repositories;
+using WebServerProject.CSR.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +17,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
+builder.Services.AddScoped<IGachaService, GachaService>();
+builder.Services.AddScoped<IGachaRepository, GachaRepository>();
+builder.Services.AddScoped<IGachaRandomizer, GachaRandomizer>();
 
 // MySQL 연결 설정
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
