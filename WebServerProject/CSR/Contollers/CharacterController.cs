@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.CSR.Services;
+using WebServerProject.Models.DTOs.Character;
+using WebServerProject.Models.DTOs.User;
+using WebServerProject.Models.Entities.User;
 using WebServerProject.Models.Request;
 using WebServerProject.Models.Response;
 
@@ -19,8 +22,8 @@ namespace WebServerProject.CSR.Contollers
         [HttpPost("list")]
         public async Task<CharacterListResponse> GetCharacterList([FromBody] CharacterListRequest request)
         {
-            var characters = await _characterService.GetUserCharacterList(request.userId);
-            if (characters == null)
+            var characterList = await _characterService.GetUserCharacterDetailList(request.userId);
+            if (characterList == null || characterList.Count == 0)
             {
                 return new CharacterListResponse
                 {
@@ -32,7 +35,7 @@ namespace WebServerProject.CSR.Contollers
             return new CharacterListResponse
             {
                 success = true,
-                characters = characters
+                characters = characterList
             };
         }
     }

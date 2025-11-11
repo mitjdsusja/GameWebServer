@@ -1,6 +1,6 @@
-﻿using WebServerProject.Models.Entities.User;
+﻿
 
-namespace WebServerProject.Models.Entities.Master
+namespace WebServerProject.Models.Entities.Character
 {
     public class CharacterTemplate
     {

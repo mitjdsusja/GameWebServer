@@ -1,12 +1,13 @@
 ﻿using SqlKata.Execution;
 using WebServerProject.Models.DTOs.Character;
-using WebServerProject.Models.Entities.User;
+using WebServerProject.Models.Entities.Character;
 
 namespace WebServerProject.CSR.Repositories
 {
     public interface ICharacterRepository
     {
         public Task<List<UserCharacter>> GetUserCharacterListAsync(int userId);
+        public Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds);
         public Task<AddCharacterResultDTO> AddCharacterToUser(int userId, int characterId);
     }
 
@@ -21,11 +22,21 @@ namespace WebServerProject.CSR.Repositories
 
         public async Task<List<UserCharacter>> GetUserCharacterListAsync(int userId)
         {
-            var result = await _db.Query("user_characters")
-                                  .Where("account_id", userId)
-                                  .GetAsync<UserCharacter>();
+            // 유저 캐릭터 목록 조회
+            var characters = await _db.Query("user_characters")
+                                      .Where("account_id", userId)
+                                      .GetAsync<UserCharacter>();
 
-            return result.ToList();
+            return characters.ToList();
+        }
+
+        public async Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds)
+        {
+            // 캐릭터 템플릿 목록 조회
+            var templates = await _db.Query("character_templates")
+                                     .WhereIn("id", templateIds)
+                                     .GetAsync<CharacterTemplate>();
+            return templates.ToList();
         }
 
         public async Task<AddCharacterResultDTO> AddCharacterToUser(int userId, int characterId)

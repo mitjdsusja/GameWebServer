@@ -8,7 +8,7 @@
 
     public class GachaDrawRequest
     {
-        public string gachaCode { get; set; }
         public int userId { get; set; }
+        public string gachaCode { get; set; }
     }
 }
