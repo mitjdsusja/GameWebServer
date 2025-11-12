@@ -23,10 +23,12 @@ namespace WebServerProject.CSR.Services
 
         public GachaService(
             IUserRepository userRepository,
+            ICharacterRepository characterRepository,
             IGachaRepository gachaRepository,
             IGachaRandomizer gachaRandomizer)
         {
             _userRepository = userRepository;   
+            _characterRepository = characterRepository;
             _gachaRepository = gachaRepository;
             _gachaRandomizer = gachaRandomizer;
         }
@@ -36,7 +38,7 @@ namespace WebServerProject.CSR.Services
             var gachaMasterDTOList = new List<GachaMasterDTO>();
 
             var gachaMasterList = await _gachaRepository.GetGachaListAsync();
-            if(gachaMasterDTOList == null)
+            if(gachaMasterList == null)
             {
                 return null;
             }
@@ -54,30 +56,22 @@ namespace WebServerProject.CSR.Services
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return new GachaDrawResultDTO
-                {
-                    Success = false,
-                    Message = "사용자를 찾을 수 없습니다."
-                };
+                throw new InvalidOperationException("사용자를 찾을 수 없습니다.");
             }
 
             // 재화 확인
-            var resourse = await _userRepository.GetUserResourcesByIdAsync(userId);
-            if (resourse == null)
+            var resource = await _userRepository.GetUserResourcesByIdAsync(userId);
+            if (resource == null)
             {
-                return new GachaDrawResultDTO
-                {
-                    Success = false,
-                    Message = "유저 정보가 없습니다."
-                };
+                throw new InvalidOperationException("유저 재화 정보를 찾을 수 없습니다.");
             }
-            else if(resourse.diamond < 100)
+            else if(resource.diamond < 100)
             {
                 return new GachaDrawResultDTO
                 {
                     Success = false,
-                    Message = "다이아몬드가 부족합니다. 남은 다이아 : " + resourse.diamond,
-                    RemainingResources = UserResourcesDTO.FromUserResources(resourse)
+                    Message = "다이아몬드가 부족합니다. 남은 다이아 : " + resource.diamond,
+                    RemainingResources = UserResourcesDTO.FromUserResources(resource)
                 };
             }
 
@@ -85,21 +79,21 @@ namespace WebServerProject.CSR.Services
             var selectedItem = await _gachaRandomizer.SelectItemAsync(gachaId);
             if (selectedItem == null)
             {
-                return new GachaDrawResultDTO
-                {
-                    Success = false,
-                    Message = "가챠 선택 중 오류가 발생했습니다."
-                };
+                throw new InvalidOperationException("가챠 아이템 선택에 실패했습니다.");
             }
 
             // 결과 저장
             var result = await GrantGachaRewardAsync(userId, selectedItem);
             if(result == null)
             {
+                throw new InvalidOperationException("가챠 보상 지급에 실패했습니다.");
+            }
+            if (!result.Success)
+            {
                 return new GachaDrawResultDTO
                 {
                     Success = false,
-                    Message = "보상 지급 중 오류가 발생했습니다."
+                    Message = result.Message
                 };
             }
 
@@ -112,8 +106,8 @@ namespace WebServerProject.CSR.Services
                 DrawnItem = GachaPoolDTO.FromGachaPool(selectedItem),
                 RemainingResources = new Models.DTOs.User.UserResourcesDTO
                 {
-                    Gold = resourse.gold,
-                    Diamond = resourse.diamond - 100,
+                    Gold = resource.gold,
+                    Diamond = resource.diamond - 100,
                 }
             };
         }
@@ -135,6 +129,7 @@ namespace WebServerProject.CSR.Services
                     {
                         result.Success = false;
                         result.Message = "캐릭터 추가 중 오류가 발생했습니다.";
+                        break;
                     }
                     result.Success = addCharacterResult.Success;
                     result.Message = addCharacterResult.Message;
@@ -152,7 +147,7 @@ namespace WebServerProject.CSR.Services
                     break;
 
                 default:
-                    throw new Exception($"Invalid item type: {poolItem.item_type}");
+                    throw new NotSupportedException($"지원하지 않는 아이템 타입입니다. (item_type: {poolItem.item_type})");
             }
 
             return result;

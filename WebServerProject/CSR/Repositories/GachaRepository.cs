@@ -26,7 +26,11 @@ namespace WebServerProject.CSR.Repositories
 
         public async Task<GachaMaster> GetGachaAsync(string gachaCode)
         {
+            var result = await _db.Query("gacha_rarity_rates")
+                                    .Where("gacha_code", gachaCode)
+                                    .FirstOrDefaultAsync<GachaMaster>();
 
+            return result;
         }
     }
 }

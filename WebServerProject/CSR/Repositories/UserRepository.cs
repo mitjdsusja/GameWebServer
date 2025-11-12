@@ -8,9 +8,9 @@ namespace WebServerProject.CSR.Repositories
         Task<User?> GetUserByIdAsync(int userId);
         Task<User?> GetUserByUsernameAsync(string username);
         Task<User?> GetUserByEmailAsync(string email);
-        Task<UserStats> GetUserStatsByIdAsync(int userId);
-        Task<UserProfiles> GetUserProfilesByIdAsync(int userId);
-        Task<UserResources> GetUserResourcesByIdAsync(int userId);
+        Task<UserStats?> GetUserStatsByIdAsync(int userId);
+        Task<UserProfiles?> GetUserProfilesByIdAsync(int userId);
+        Task<UserResources?> GetUserResourcesByIdAsync(int userId);
         Task<int> CreateAsync(User user);
         Task<bool> UpdateAsync(User user);
         Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime);
@@ -45,21 +45,21 @@ namespace WebServerProject.CSR.Repositories
                             .FirstOrDefaultAsync<User>();
         }
 
-        public async Task<UserStats> GetUserStatsByIdAsync(int userId)
+        public async Task<UserStats?> GetUserStatsByIdAsync(int userId)
         {
             return await _db.Query("user_stats")
                             .Where("user_id", userId)
                             .FirstOrDefaultAsync<UserStats>();
         }
 
-        public async Task<UserProfiles> GetUserProfilesByIdAsync(int userId)
+        public async Task<UserProfiles?> GetUserProfilesByIdAsync(int userId)
         {
             return await _db.Query("user_profiles")
                             .Where("user_id", userId)
                             .FirstOrDefaultAsync<UserProfiles>();
         }
 
-        public async Task<UserResources> GetUserResourcesByIdAsync(int userId)
+        public async Task<UserResources?> GetUserResourcesByIdAsync(int userId)
         {
             return await _db.Query("user_resources")
                             .Where("user_id", userId)
