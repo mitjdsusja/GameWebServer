@@ -7,6 +7,8 @@ namespace WebServerProject.CSR.Repositories
     {
         public Task<List<GachaMaster>> GetGachaListAsync();
         public Task<GachaMaster> GetGachaAsync(string gachaCode);
+        public Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId);
+        public Task<List<GachaPool>> GetGachaPoolByRarityAsync(int gachaId, int rarity);
     }
     public class GachaRepository : IGachaRepository
     {
@@ -23,14 +25,32 @@ namespace WebServerProject.CSR.Repositories
 
             return result.ToList();
         }
-
-        public async Task<GachaMaster> GetGachaAsync(string gachaCode)
+        public Task<GachaMaster> GetGachaAsync(string gachaCode)
         {
-            var result = await _db.Query("gacha_rarity_rates")
-                                    .Where("gacha_code", gachaCode)
-                                    .FirstOrDefaultAsync<GachaMaster>();
+            var result =  _db.Query("gacha_masters")
+                            .Where("gacha_code", gachaCode)
+                            .FirstOrDefaultAsync<GachaMaster>();
 
             return result;
+        }
+
+        public async Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId)
+        {
+            var result = await _db.Query("gacha_rarity_rates")
+                            .Where("id", gachaId)
+                            .GetAsync<GachaRarityRate>();
+
+            return result.ToList();
+        }
+
+        public async Task<List<GachaPool>> GetGachaPoolByRarityAsync(int gachaId, int rarity)
+        {
+            var result = await _db.Query("gacha_pools")
+                            .Where("gacha_id", gachaId)
+                            .Where("rarity", rarity)
+                            .GetAsync<GachaPool>();
+
+            return result.ToList();
         }
     }
 }
