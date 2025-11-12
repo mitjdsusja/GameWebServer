@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.CSR.Services;
-using WebServerProject.Models.DTOs.Character;
-using WebServerProject.Models.DTOs.User;
-using WebServerProject.Models.Entities.User;
 using WebServerProject.Models.Request;
 using WebServerProject.Models.Response;
 

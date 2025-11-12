@@ -6,6 +6,7 @@ namespace WebServerProject.CSR.Repositories
     public interface IGachaRepository
     {
         public Task<List<GachaMaster>> GetGachaListAsync();
+        public Task<GachaMaster> GetGachaAsync(string gachaCode);
     }
     public class GachaRepository : IGachaRepository
     {
@@ -21,6 +22,11 @@ namespace WebServerProject.CSR.Repositories
                                   .GetAsync<GachaMaster>();
 
             return result.ToList();
+        }
+
+        public async Task<GachaMaster> GetGachaAsync(string gachaCode)
+        {
+
         }
     }
 }

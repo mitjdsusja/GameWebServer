@@ -10,16 +10,17 @@ namespace WebServerProject.CSR.Services
 
     public class GachaRandomizer : IGachaRandomizer
     {
-        public readonly IGachaRepository gachaRepository;
+        public readonly IGachaRepository _gachaRepository;
 
         public GachaRandomizer(IGachaRepository gachaRepository)
         {
-            this.gachaRepository = gachaRepository;
+            _gachaRepository = gachaRepository;
         }
 
-        public async Task<GachaPool> SelectItemAsync(string gachaId)
+        public async Task<GachaPool> SelectItemAsync(string gachaCode)
         {
             // 가챠 정보 불러오기
+            var gacha = await _gachaRepository.GetGachaListAsync();
 
             // 계산
 
