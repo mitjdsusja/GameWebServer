@@ -9,10 +9,15 @@ namespace WebServerProject.CSR.Contollers
     [Route("api/[controller]")]
     public class GachaController : ControllerBase
     {
+        private readonly ILogger<GachaController> _logger;
+
         private readonly IGachaService _gachaService;
 
-        public GachaController(IGachaService gachaService )
+        public GachaController(
+            ILogger<GachaController> logger,
+            IGachaService gachaService )
         {
+            _logger = logger;
             _gachaService = gachaService;
         }
 
@@ -48,24 +53,35 @@ namespace WebServerProject.CSR.Contollers
         [HttpPost("draw")]
         public async Task<GachaDrawResponse> Draw([FromBody] GachaDrawRequest req)
         {
-            var result = await _gachaService.DrawAsync(req.gachaCode, req.userId);
-
-            if(result == null)
+            try
             {
+                var result = await _gachaService.DrawAsync(req.gachaCode, req.userId);
+
+                return new GachaDrawResponse
+                {
+                    success = result.Success,
+                    message = result.Message,
+                    drawnItem = result.DrawnItem,
+                    remainingResources = result.RemainingResources
+                };
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "가챠 처리 중 비즈니스 예외 발생: {Message}", ex.Message);
+                return new GachaDrawResponse{
+                    success = false,
+                    message = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "가챠 뽑기 중 예외 발생: {Message}", ex.Message);
                 return new GachaDrawResponse
                 {
                     success = false,
-                    message = "가챠 뽑기에 실패했습니다."
+                    message = "가챠 뽑기 중 오류가 발생했습니다. " + ex.Message
                 };
             }
-
-            return new GachaDrawResponse
-            {
-                success = result.Success,
-                message = result.Message,
-                drawnItem = result.DrawnItem,
-                remainingResources = result.RemainingResources
-            };
         }
     }
 }

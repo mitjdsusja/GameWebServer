@@ -28,7 +28,7 @@ namespace WebServerProject.CSR.Repositories
         public Task<GachaMaster> GetGachaAsync(string gachaCode)
         {
             var result =  _db.Query("gacha_masters")
-                            .Where("gacha_code", gachaCode)
+                            .Where("code", gachaCode)
                             .FirstOrDefaultAsync<GachaMaster>();
 
             return result;

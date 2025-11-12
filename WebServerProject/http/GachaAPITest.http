@@ -13,6 +13,6 @@ POST {{ReqeustTest_HostAdress}}/draw
 Content-Type: application/json
 
 {
-  "userId": "2"
-  "gachaCode": "test_cacha",
+  "userId": "2",
+  "gachaCode": "test_gacha"
 }
