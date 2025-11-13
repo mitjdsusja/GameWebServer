@@ -40,7 +40,12 @@ namespace WebServerProject.CSR.Services
             var gachaMasterList = await _gachaRepository.GetGachaListAsync();
             if(gachaMasterList == null)
             {
-                return null;
+                throw new InvalidOperationException("가챠 목록 데이터를 불러올 수 없습니다.");
+            }
+
+            if(gachaMasterDTOList.Count == 0)
+            {
+                throw new InvalidOperationException("등록된 가챠가 없습니다.");
             }
 
             foreach (var gachaMaster in gachaMasterList)

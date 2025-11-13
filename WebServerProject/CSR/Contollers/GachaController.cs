@@ -24,30 +24,37 @@ namespace WebServerProject.CSR.Contollers
         [HttpPost("list")]
         public async Task<GachaListResponse> GetList([FromBody] GachaListRequest req)
         {
-            var gachaList = await _gachaService.GetGachaListAsync();
-            if(gachaList == null)
+            try
             {
-                return new GachaListResponse
-                {
-                    success = false,
-                    message = "가챠 목록을 불러오는 데 실패했습니다."
-                };
-            }
-            else if(gachaList.Count == 0)
-            {
-                return new GachaListResponse
-                {
-                    success = false,
-                    message = "가챠 목록이 없습니다."
-                };
-            }
+                var gachaList = await _gachaService.GetGachaListAsync();
 
-            return new GachaListResponse
+                return new GachaListResponse
+                {
+                    success = true,
+                    message = "가챠 목록을 불러왔습니다.",
+                    gachaList = gachaList
+                };
+            }
+            catch (InvalidOperationException ex)
             {
-                success = true,
-                message = "가챠 목록을 불러왔습니다.",
-                gachaList = gachaList
-            };
+                _logger.LogWarning(ex, "가챠 목록 조회 중 예외 발생: {Message}", ex.Message);
+
+                return new GachaListResponse
+                {
+                    success = false,
+                    message = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "가챠 목록 조회 중 서버 예외 발생");
+
+                return new GachaListResponse
+                {
+                    success = false,
+                    message = "가챠 목록을 불러오는 중 오류가 발생했습니다. 관리자에게 문의하세요."
+                };
+            }
         }
 
         [HttpPost("draw")]
@@ -67,7 +74,7 @@ namespace WebServerProject.CSR.Contollers
             }
             catch (InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "가챠 처리 중 비즈니스 예외 발생: {Message}", ex.Message);
+                _logger.LogWarning(ex, "가챠 처리 중 예외 발생: {Message}", ex.Message);
                 return new GachaDrawResponse{
                     success = false,
                     message = ex.Message
