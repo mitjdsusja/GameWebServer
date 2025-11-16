@@ -129,7 +129,7 @@ namespace WebServerProject.CSR.Services
             {
                 case (int)GachaPool.ItemType.ITEM_CHARACTER:
                     // 캐릭터 획득 처리
-                    var addCharacterResult = await _characterRepository.AddCharacterToUser(userId, poolItem.item_id);
+                    var addCharacterResult = await _characterRepository.AddCharacterToUserAsync(userId, poolItem.item_id);
                     if (addCharacterResult == null)
                     {
                         result.Success = false;

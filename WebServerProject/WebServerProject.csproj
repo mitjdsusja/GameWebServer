@@ -20,8 +20,4 @@
     <PackageReference Include="SqlKata.Execution" Version="4.0.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\DTOs\Deck\" />
-  </ItemGroup>
-
 </Project>

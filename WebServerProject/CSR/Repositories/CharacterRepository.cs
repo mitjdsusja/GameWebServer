@@ -8,7 +8,9 @@ namespace WebServerProject.CSR.Repositories
     {
         public Task<List<UserCharacter>> GetUserCharacterListAsync(int userId);
         public Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds);
-        public Task<AddCharacterResultDTO> AddCharacterToUser(int userId, int characterId);
+        public Task<UserCharacter> GetUserCharacterAsync(int userCharacterId);
+        public Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId);
+        public Task<AddCharacterResultDTO> AddCharacterToUserAsync(int userId, int characterId);
     }
 
     public class CharacterRepository : ICharacterRepository
@@ -39,7 +41,7 @@ namespace WebServerProject.CSR.Repositories
             return templates.ToList();
         }
 
-        public async Task<AddCharacterResultDTO> AddCharacterToUser(int userId, int characterId)
+        public async Task<AddCharacterResultDTO> AddCharacterToUserAsync(int userId, int characterId)
         {
             // 중복 확인
             var existingCharacter = await _db.Query("user_characters")
@@ -73,6 +75,22 @@ namespace WebServerProject.CSR.Repositories
                 Message = result > 0 ? "캐릭터가 성공적으로 추가되었습니다." : "캐릭터 추가에 실패했습니다.",
                 isNew = result > 0
             };
+        }
+
+        public async Task<UserCharacter> GetUserCharacterAsync(int userCharacterId)
+        {
+            var result = await _db.Query("user_characters")
+                                  .Where("id", userCharacterId)
+                                  .FirstOrDefaultAsync<UserCharacter>();
+            return result;  
+        }
+
+        public async Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId)
+        {
+            var result = await _db.Query("character_templates")
+                                  .Where("id", templateId)
+                                  .FirstOrDefaultAsync<CharacterTemplate>();
+            return result;
         }
     }
 }
