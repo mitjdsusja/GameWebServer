@@ -53,5 +53,39 @@ namespace WebServerProject.CSR.Contollers
                 };
             }
         }
+
+        [HttpPost("update")]
+        public async Task<DeckUpdateResponse> UpdateDeckAsync([FromBody] DeckUpdateRequest req)
+        {
+            try
+            {
+                var updatedDeck = await _deckService.UpdateDeckAsync(req.userId, req.deckIndex, req.characterIds);
+
+                return new DeckUpdateResponse
+                {
+                    success = true,
+                    message = "덱이 성공적으로 업데이트되었습니다.",
+                    updatedDeck = updatedDeck
+                };
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "덱 업데이트 중 예외 발생: {Message}", ex.Message);
+                return new DeckUpdateResponse
+                {
+                    success = false,
+                    message = ex.Message
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "덱 업데이트 중 서버 예외 발생");
+                return new DeckUpdateResponse
+                {
+                    success = false,
+                    message = "덱을 업데이트하는 중 오류가 발생했습니다. 관리자에게 문의하세요."
+                };
+            }
+        }
     }
 }

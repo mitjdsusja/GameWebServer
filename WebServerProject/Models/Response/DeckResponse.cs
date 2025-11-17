@@ -8,4 +8,11 @@ namespace WebServerProject.Models.Response
         public string message { get; set; }
         public List<DeckDTO> decks { get; set; }
     }
+
+    public class DeckUpdateResponse
+    {
+        public bool success { get; set; }
+        public string message { get; set; }
+        public DeckDTO? updatedDeck { get; set; }
+    }
 }

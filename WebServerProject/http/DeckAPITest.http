@@ -5,12 +5,14 @@ POST {{ReqeustTest_HostAdress}}/list
 Content-Type: application/json
 
 {
-  
+  "userId" : "2"
 }
 
 ### 덱 업데이트
 POST {{ReqeustTest_HostAdress}}/update
 Content-Type: application/json
 {
-
+  "userId" : "2",
+  "deckIndex" : "1",
+  "characterIds" : [ "0", "1", "0" ]
 }

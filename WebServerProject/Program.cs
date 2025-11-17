@@ -21,6 +21,9 @@ builder.Services.AddScoped<IGachaService, GachaService>();
 builder.Services.AddScoped<IGachaRepository, GachaRepository>();
 builder.Services.AddScoped<IGachaRandomizer, GachaRandomizer>();
 
+builder.Services.AddScoped<IDeckService, DeckService>();
+builder.Services.AddScoped<IDeckRepository, DeckRepository>();
+
 // MySQL 연결 설정
 var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
 var dbUser = Environment.GetEnvironmentVariable("DB_USER");
