@@ -1,11 +1,11 @@
 ﻿@ReqeustTest_HostAdress = http://localhost:5000/api/battle
 
-### 
+### 배틀 요청
 POST {{ReqeustTest_HostAdress}}/stage/start
 Content-Type: application/json
 
 {
   "userId": "2",
-  "stageId": "1"
+  "stageId": "1",
   "deckId" : "1"
 }

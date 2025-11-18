@@ -30,13 +30,15 @@ namespace WebServerProject.CSR.Contollers
                 return new StartStageBattleResponse
                 {
                     success = result.success,
-                    message = result.message
+                    message = result.message,
+                    rewardGold = result.rewardGold,
+                    rewardExp = result.rewardExp
                     // TODO : 결과
                 };
             }
             catch(InvalidOperationException ex)
             {
-                _logger.LogWarning(ex, "Invalid operation while starting stage battle");
+                _logger.LogWarning(ex, "배틀 요청 중 예외 발생: {Message}", ex.Message);
                 return new StartStageBattleResponse
                 {
                     success = false,
@@ -45,11 +47,11 @@ namespace WebServerProject.CSR.Contollers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error starting stage battle"); 
+                _logger.LogError(ex, "배틍 요청 중 서버 예외 발생");
                 return new StartStageBattleResponse
                 {
                     success = false,
-                    message = ex.Message
+                    message = "배틀 요청 중 오류가 발생했습니다. 관리자에게 문의하세요."
                 };
             }
         }

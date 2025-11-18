@@ -39,7 +39,9 @@ namespace WebServerProject.CSR.Services
             return new StartStageBattleResult
             {
                 success = true,
-                message = "전투가 성공적으로 시작되었습니다."
+                message = "전투가 성공적으로 시작되었습니다.",
+                rewardGold = stageDTO.rewardGold,
+                rewardExp = stageDTO.rewardExp
             };
         }
     }
