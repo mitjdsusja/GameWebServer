@@ -1,4 +1,4 @@
-﻿using WebServerProject.CSR.Repositories;
+﻿using WebServerProject.CSR.Repositories.User;
 using WebServerProject.Models.Entities.User;
 using WebServerProject.Models.Utils.Auth;
 
