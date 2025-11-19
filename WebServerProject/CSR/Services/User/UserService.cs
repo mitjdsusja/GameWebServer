@@ -1,5 +1,6 @@
-﻿using WebServerProject.CSR.Repositories;
+﻿using WebServerProject.CSR.Repositories.User;
 using WebServerProject.Models.DTOs.User;
+using WebServerProject.Models.DTOs.UserEntity;
 
 namespace WebServerProject.CSR.Services
 {

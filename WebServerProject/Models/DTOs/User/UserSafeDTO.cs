@@ -1,4 +1,6 @@
-﻿namespace WebServerProject.Models.DTOs.User
+﻿using WebServerProject.Models.DTOs.UserEntity;
+
+namespace WebServerProject.Models.DTOs.User
 {
     // 클라이언트에 전송할 안전한 사용자 모델 (패스워드 정보 제외)
     public class UserSafeDTO
@@ -14,7 +16,7 @@
         public UserProfilesDTO profiles { get; set; }
         public UserResourcesDTO resources { get; set; }
 
-        public static UserSafeDTO FromUser(Entities.User.User user)
+        public static UserSafeDTO FromUser(Entities.UserEntity.User user)
         {
             var model = new UserSafeDTO
             {

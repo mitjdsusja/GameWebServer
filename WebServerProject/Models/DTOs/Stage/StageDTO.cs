@@ -10,7 +10,7 @@
 
         public List<StageEnemyDTO> stageEnemies { get; set; }
 
-        public static StageDTO FromStage(Entities.Stage.Stage stage)
+        public static StageDTO FromStage(Entities.StageEntity.Stage stage)
         {
             return new StageDTO
             {

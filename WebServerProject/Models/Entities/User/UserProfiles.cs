@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.Entities.User
+﻿namespace WebServerProject.Models.Entities.UserEntity
 {
     public class UserProfiles
     {

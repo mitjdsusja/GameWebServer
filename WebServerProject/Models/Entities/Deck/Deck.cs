@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.Entities.Deck
+﻿namespace WebServerProject.Models.Entities.DeckEntity
 {
     public class Deck
     {

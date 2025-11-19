@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.CSR.Services;
 using WebServerProject.Models.Request;
+using WebServerProject.Models.Request.gacha;
 using WebServerProject.Models.Response;
+using WebServerProject.Models.Response.gacha;
 
 namespace WebServerProject.CSR.Contollers
 {

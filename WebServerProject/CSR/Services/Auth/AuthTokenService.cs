@@ -1,5 +1,5 @@
 ﻿using System.Security.Cryptography;
-using WebServerProject.Models.Entities.User;
+using WebServerProject.Models.Entities.UserEntity;
 using WebServerProject.Models.Utils.Auth;
 
 namespace WebServerProject.CSR.Services.Auth

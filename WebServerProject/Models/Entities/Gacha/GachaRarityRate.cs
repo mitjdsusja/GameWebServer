@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.Entities.Gacha
+﻿namespace WebServerProject.Models.Entities.GachaEntity
 {
     public class GachaRarityRate
     {

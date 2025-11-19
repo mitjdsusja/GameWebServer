@@ -1,4 +1,4 @@
-﻿using WebServerProject.Models.Entities.Enemy;
+﻿using WebServerProject.Models.Entities.EnemyEntity;
 
 namespace WebServerProject.Models.DTOs.Enemy
 {

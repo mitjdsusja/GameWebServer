@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.Entities.Enemy
+﻿namespace WebServerProject.Models.Entities.EnemyEntity
 {
     public class EnemyTemplate
     {

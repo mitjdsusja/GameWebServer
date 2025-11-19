@@ -1,18 +1,21 @@
 ﻿using SqlKata.Execution;
-using WebServerProject.Models.Entities.User;
+using UserEntity = WebServerProject.Models.Entities.UserEntity.User;
+using UserStateEntity = WebServerProject.Models.Entities.UserEntity.UserStats;
+using UserProfileEntity = WebServerProject.Models.Entities.UserEntity.UserProfiles;
+using UserResourcesEntity = WebServerProject.Models.Entities.UserEntity.UserResources;
 
 namespace WebServerProject.CSR.Repositories.User
 {
     public interface IUserRepository
     {
-        Task<User?> GetUserByIdAsync(int userId);
-        Task<User?> GetUserByUsernameAsync(string username);
-        Task<User?> GetUserByEmailAsync(string email);
-        Task<UserStats?> GetUserStatsByIdAsync(int userId);
-        Task<UserProfiles?> GetUserProfilesByIdAsync(int userId);
-        Task<UserResources?> GetUserResourcesByIdAsync(int userId);
-        Task<int> CreateAsync(User user);
-        Task<bool> UpdateAsync(User user);
+        Task<UserEntity?> GetUserByIdAsync(int userId);
+        Task<UserEntity?> GetUserByUsernameAsync(string username);
+        Task<UserEntity?> GetUserByEmailAsync(string email);
+        Task<UserStateEntity?> GetUserStatsByIdAsync(int userId);
+        Task<UserProfileEntity?> GetUserProfilesByIdAsync(int userId);
+        Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId);
+        Task<int> CreateAsync(UserEntity user);
+        Task<bool> UpdateAsync(UserEntity user);
         Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime);
     }
     public class UserRepository : IUserRepository
@@ -24,49 +27,49 @@ namespace WebServerProject.CSR.Repositories.User
             _db = db;
         }
 
-        public async Task<User?> GetUserByIdAsync(int userId)
+        public async Task<UserEntity?> GetUserByIdAsync(int userId)
         {
             return await _db.Query("users")
                             .Where("id", userId)
-                            .FirstOrDefaultAsync<User>();
+                            .FirstOrDefaultAsync<UserEntity>();
         }
 
-        public async Task<User?> GetUserByUsernameAsync(string username)
+        public async Task<UserEntity?> GetUserByUsernameAsync(string username)
         {
             return await _db.Query("users")
                             .Where("username", username)
-                            .FirstOrDefaultAsync<User>();
+                            .FirstOrDefaultAsync<UserEntity>();
         }
 
-        public async Task<User?> GetUserByEmailAsync(string email)
+        public async Task<UserEntity?> GetUserByEmailAsync(string email)
         {
             return await _db.Query("users")
                             .Where("email", email)
-                            .FirstOrDefaultAsync<User>();
+                            .FirstOrDefaultAsync<UserEntity>();
         }
 
-        public async Task<UserStats?> GetUserStatsByIdAsync(int userId)
+        public async Task<UserStateEntity?> GetUserStatsByIdAsync(int userId)
         {
             return await _db.Query("user_stats")
                             .Where("user_id", userId)
-                            .FirstOrDefaultAsync<UserStats>();
+                            .FirstOrDefaultAsync<UserStateEntity>();
         }
 
-        public async Task<UserProfiles?> GetUserProfilesByIdAsync(int userId)
+        public async Task<UserProfileEntity?> GetUserProfilesByIdAsync(int userId)
         {
             return await _db.Query("user_profiles")
                             .Where("user_id", userId)
-                            .FirstOrDefaultAsync<UserProfiles>();
+                            .FirstOrDefaultAsync<UserProfileEntity>();
         }
 
-        public async Task<UserResources?> GetUserResourcesByIdAsync(int userId)
+        public async Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId)
         {
             return await _db.Query("user_resources")
                             .Where("user_id", userId)
-                            .FirstOrDefaultAsync<UserResources>();
+                            .FirstOrDefaultAsync<UserResourcesEntity>();
         }
 
-        public async Task<int> CreateAsync(User user)
+        public async Task<int> CreateAsync(UserEntity user)
         {
             var id = await _db.Query("users").InsertGetIdAsync<int>(new
             {
@@ -79,7 +82,7 @@ namespace WebServerProject.CSR.Repositories.User
             return id;
         }
 
-        public async Task<bool> UpdateAsync(User user)
+        public async Task<bool> UpdateAsync(UserEntity user)
         {
             var affected = await _db.Query("users")
                 .Where("id", user.id)

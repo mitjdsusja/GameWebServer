@@ -1,5 +1,5 @@
 ﻿using WebServerProject.CSR.Repositories.Gacha;
-using WebServerProject.Models.Entities.Gacha;
+using WebServerProject.Models.Entities.GachaEntity;
 
 namespace WebServerProject.CSR.Services.Gacha
 {

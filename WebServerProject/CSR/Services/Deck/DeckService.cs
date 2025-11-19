@@ -2,7 +2,7 @@
 using WebServerProject.CSR.Repositories.Deck;
 using WebServerProject.Models.DTOs.Character;
 using WebServerProject.Models.DTOs.Deck;
-using WebServerProject.Models.Entities.Deck;
+using WebServerProject.Models.Entities.DeckEntity;
 
 namespace WebServerProject.CSR.Services.Deck
 {

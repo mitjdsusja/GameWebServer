@@ -1,17 +1,18 @@
 ﻿using SqlKata.Execution;
-using WebServerProject.Models.DTOs.Deck;
-using WebServerProject.Models.Entities.Deck;
+
+using DeckEntity =  WebServerProject.Models.Entities.DeckEntity.Deck;
+using DeckSlotEntity = WebServerProject.Models.Entities.DeckEntity.DeckSlot;
 
 namespace WebServerProject.CSR.Repositories.Deck
 {
     public interface IDeckRepository
     {
-        public Task<Deck> GetDeckAsync(int deckId);
-        public Task<List<Deck>> GetDeckListAsync(int userId);
-        public Task<List<DeckSlot>> GetDeckSlotsAsync(int deckId);
+        public Task<DeckEntity> GetDeckAsync(int deckId);
+        public Task<List<DeckEntity>> GetDeckListAsync(int userId);
+        public Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId);
 
         public Task DeleteDeckSlotsAsync(int deckId);
-        public Task InsertDeckSlotAsync(DeckSlot slot);
+        public Task InsertDeckSlotAsync(DeckSlotEntity slot);
     }
 
     public class DeckRepository : IDeckRepository
@@ -23,30 +24,30 @@ namespace WebServerProject.CSR.Repositories.Deck
             _db = db;
         }
 
-        public async Task<Deck> GetDeckAsync(int deckId)
+        public async Task<DeckEntity> GetDeckAsync(int deckId)
         {
             var deck = await _db.Query("decks")
                                 .Where("id", deckId)
-                                .FirstOrDefaultAsync<Deck>();
+                                .FirstOrDefaultAsync<DeckEntity>();
 
             return deck;
         }
 
-        public async Task<List<Deck>> GetDeckListAsync(int userId)
+        public async Task<List<DeckEntity>> GetDeckListAsync(int userId)
         {
             var deck = await _db.Query("decks")
                           .Where("user_id", userId)
-                          .GetAsync<Deck>();
+                          .GetAsync<DeckEntity>();
 
             return deck.ToList();
         }
 
-        public async Task<List<DeckSlot>> GetDeckSlotsAsync(int deckId)
+        public async Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId)
         {
             var deckSlots = await _db.Query("deck_slots")
                                      .Where("deck_id", deckId)
                                      .OrderBy("slot_order")
-                                     .GetAsync<DeckSlot>();
+                                     .GetAsync<DeckSlotEntity>();
 
             return deckSlots.ToList();
         }
@@ -58,7 +59,7 @@ namespace WebServerProject.CSR.Repositories.Deck
                      .DeleteAsync();
         }
 
-        public async Task InsertDeckSlotAsync(DeckSlot slot)
+        public async Task InsertDeckSlotAsync(DeckSlotEntity slot)
         {
             await _db.Query("deck_slots")
                      .InsertAsync(new

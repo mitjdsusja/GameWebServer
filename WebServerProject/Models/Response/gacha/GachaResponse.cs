@@ -1,5 +1,5 @@
 ﻿using WebServerProject.Models.DTOs.Gacha;
-using WebServerProject.Models.DTOs.User;
+using WebServerProject.Models.DTOs.UserEntity;
 
 namespace WebServerProject.Models.Response.gacha
 {

@@ -1,4 +1,4 @@
-﻿namespace WebServerProject.Models.Entities.Stage
+﻿namespace WebServerProject.Models.Entities.StageEntity
 {
     public class StageEnemy
     {

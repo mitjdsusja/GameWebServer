@@ -1,4 +1,4 @@
-﻿using WebServerProject.Models.Entities.Character;
+﻿using WebServerProject.Models.Entities.CharacterEntity;
 
 namespace WebServerProject.Models.DTOs.Character
 {

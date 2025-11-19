@@ -1,7 +1,4 @@
-﻿using Humanizer;
-using static Humanizer.In;
-
-namespace WebServerProject.Models.Entities.Gacha
+﻿namespace WebServerProject.Models.Entities.GachaEntity
 {
     public class GachaPool
     {

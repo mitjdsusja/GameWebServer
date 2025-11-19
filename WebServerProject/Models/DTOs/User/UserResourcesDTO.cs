@@ -1,6 +1,6 @@
-﻿using WebServerProject.Models.Entities.User;
+﻿using WebServerProject.Models.Entities.UserEntity;
 
-namespace WebServerProject.Models.DTOs.User
+namespace WebServerProject.Models.DTOs.UserEntity
 {
     public class UserResourcesDTO
     {

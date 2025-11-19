@@ -1,14 +1,17 @@
 ﻿using SqlKata.Execution;
-using WebServerProject.Models.Entities.Stage;
+
+using StageEntity = WebServerProject.Models.Entities.StageEntity.Stage;
+using StageEnemyEntity = WebServerProject.Models.Entities.StageEntity.StageEnemy;
 
 namespace WebServerProject.CSR.Repositories.Stage
 {
     public interface IStageRepository
     {
-        public Task<List<Stage>> GetStageListAsync();
-        public Task<Stage> GetStageAsync(int stageId);
-        public Task<Stage> GetStageAsync(int chapterId, int stageNumber);
-        public Task<List<StageEnemy>> GetStageEnemyListAsync(int stageId);
+        public Task<List<StageEntity>> GetStageListAsync();
+        public Task<List<StageEntity>> GetStageListAsync(int chapterId);
+        public Task<StageEntity> GetStageAsync(int stageId);
+        public Task<StageEntity> GetStageAsync(int chapterId, int stageNumber);
+        public Task<List<StageEnemyEntity>> GetStageEnemyListAsync(int stageId);
     }
 
     public class StageRepository : IStageRepository
@@ -20,37 +23,47 @@ namespace WebServerProject.CSR.Repositories.Stage
             _db = db;
         }
 
-        public async Task<List<Stage>> GetStageListAsync()
+        public async Task<List<StageEntity>> GetStageListAsync()
         {
             var stages = await _db.Query("stages")
-                                  .GetAsync<Stage>();
+                                  .GetAsync<StageEntity>();
 
             return stages.ToList();
         }
 
-        public async Task<Stage> GetStageAsync(int stageId)
+        public async Task<List<StageEntity>> GetStageListAsync(int chapterId)
+        {
+            var stages = await _db.Query("stages")
+                                  .Where("chapter", chapterId)
+                                  .OrderBy("stage_number")
+                                  .GetAsync<StageEntity>();
+
+            return stages.ToList();
+        }
+
+        public async Task<StageEntity> GetStageAsync(int stageId)
         {
             var stage = await _db.Query("stages")
                                  .Where("id", stageId)
-                                 .FirstOrDefaultAsync<Stage>();
+                                 .FirstOrDefaultAsync<StageEntity>();
 
             return stage;
         }
 
-        public async Task<Stage> GetStageAsync(int chapterId, int stageNumber)
+        public async Task<StageEntity> GetStageAsync(int chapterId, int stageNumber)
         {
             var stage = await _db.Query("stages")
                                  .Where("chapter", chapterId)
                                  .Where("stage_number", stageNumber)
-                                 .FirstOrDefaultAsync<Stage>();
+                                 .FirstOrDefaultAsync<StageEntity>();
             return stage;
         }
 
-        public async Task<List<StageEnemy>> GetStageEnemyListAsync(int stageId)
+        public async Task<List<StageEnemyEntity>> GetStageEnemyListAsync(int stageId)
         {
             var stageEnemies = await _db.Query("stage_enemies")
                                         .Where("stage_id", stageId)
-                                        .GetAsync<StageEnemy>();
+                                        .GetAsync<StageEnemyEntity>();
             return stageEnemies.ToList();
         }
     }

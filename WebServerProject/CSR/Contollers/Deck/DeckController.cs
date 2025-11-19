@@ -2,6 +2,9 @@
 using WebServerProject.CSR.Services;
 using WebServerProject.Models.Response;
 using WebServerProject.Models.Request;
+using WebServerProject.Models.Response.Deck;
+using WebServerProject.Models.Request.Deck;
+using WebServerProject.CSR.Services.Deck;
 
 namespace WebServerProject.CSR.Contollers
 {

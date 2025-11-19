@@ -1,6 +1,5 @@
 ﻿using WebServerProject.Models.DTOs.Enemy;
-using WebServerProject.Models.Entities.Enemy;
-using WebServerProject.Models.Entities.Stage;
+using WebServerProject.Models.Entities.StageEntity;
 
 namespace WebServerProject.Models.DTOs.Stage
 {

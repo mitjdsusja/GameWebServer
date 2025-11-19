@@ -1,6 +1,5 @@
 ﻿using WebServerProject.CSR.Repositories.User;
-using WebServerProject.Models.Entities.User;
-using WebServerProject.Models.Utils.Auth;
+using WebServerProject.Models.Entities.UserEntity;
 
 namespace WebServerProject.CSR.Services.Auth
 {

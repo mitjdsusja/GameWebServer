@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebServerProject.CSR.Services;
-using WebServerProject.Models.Request;
-using WebServerProject.Models.Response;
+using WebServerProject.CSR.Services.Character;
+using WebServerProject.Models.Request.Character;
+using WebServerProject.Models.Response.Character;
 
 namespace WebServerProject.CSR.Contollers
 {

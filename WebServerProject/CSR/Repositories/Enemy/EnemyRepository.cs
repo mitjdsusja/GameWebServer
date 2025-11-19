@@ -1,5 +1,5 @@
 ﻿using SqlKata.Execution;
-using WebServerProject.Models.Entities.Enemy;
+using WebServerProject.Models.Entities.EnemyEntity;
 
 namespace WebServerProject.CSR.Repositories.Enemy
 {

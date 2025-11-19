@@ -1,5 +1,5 @@
 ﻿
-namespace WebServerProject.Models.Entities.Character
+namespace WebServerProject.Models.Entities.CharacterEntity
 {
     public class UserCharacter
     {

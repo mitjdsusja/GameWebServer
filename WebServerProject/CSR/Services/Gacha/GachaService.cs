@@ -1,9 +1,10 @@
-﻿using System.Reflection.Metadata.Ecma335;
-using WebServerProject.CSR.Repositories;
+﻿using WebServerProject.CSR.Repositories.Character;
+using WebServerProject.CSR.Repositories.Gacha;
+using WebServerProject.CSR.Repositories.User;
+using WebServerProject.CSR.Services.Gacha;
 using WebServerProject.Models.DTOs.Gacha;
-using WebServerProject.Models.DTOs.User;
-using WebServerProject.Models.Entities.Gacha;
-using WebServerProject.Models.Gacha;
+using WebServerProject.Models.DTOs.UserEntity;
+using WebServerProject.Models.Entities.GachaEntity;
 
 namespace WebServerProject.CSR.Services
 {
@@ -109,7 +110,7 @@ namespace WebServerProject.CSR.Services
                 Message = "뽑기 성공",
 
                 DrawnItem = GachaPoolDTO.FromGachaPool(selectedItem),
-                RemainingResources = new Models.DTOs.User.UserResourcesDTO
+                RemainingResources = new UserResourcesDTO
                 {
                     Gold = resource.gold,
                     Diamond = resource.diamond - 100,

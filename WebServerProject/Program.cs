@@ -2,8 +2,18 @@
 using SqlKata.Compilers;
 using SqlKata.Execution;
 using System.Reflection;
-using WebServerProject.CSR.Repositories;
+using WebServerProject.CSR.Repositories.Character;
+using WebServerProject.CSR.Repositories.Deck;
+using WebServerProject.CSR.Repositories.Enemy;
+using WebServerProject.CSR.Repositories.Gacha;
+using WebServerProject.CSR.Repositories.Stage;
+using WebServerProject.CSR.Repositories.User;
 using WebServerProject.CSR.Services;
+using WebServerProject.CSR.Services.Auth;
+using WebServerProject.CSR.Services.Character;
+using WebServerProject.CSR.Services.Deck;
+using WebServerProject.CSR.Services.Gacha;
+using WebServerProject.CSR.Services.Stage;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,4 +1,5 @@
-﻿
+﻿using DeckEntity = WebServerProject.Models.Entities.DeckEntity.Deck;
+
 namespace WebServerProject.Models.DTOs.Deck
 {
     public class DeckDTO
@@ -8,7 +9,7 @@ namespace WebServerProject.Models.DTOs.Deck
         public bool isActive { get; set; }
         public List<DeckSlotDTO>? deckSlots { get; set; }
         
-        public static DeckDTO FromDeck(Models.Entities.Deck.Deck deck)
+        public static DeckDTO FromDeck(DeckEntity deck)
         {
             var dto = new DeckDTO
             {

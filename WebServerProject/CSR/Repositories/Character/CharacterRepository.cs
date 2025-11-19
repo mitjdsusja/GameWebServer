@@ -1,6 +1,6 @@
 ﻿using SqlKata.Execution;
 using WebServerProject.CSR.Services.Character;
-using WebServerProject.Models.Entities.Character;
+using WebServerProject.Models.Entities.CharacterEntity;
 
 namespace WebServerProject.CSR.Repositories.Character
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.CSR.Services.Auth;
-using WebServerProject.Models.Request;
+using WebServerProject.Models.Request.Auth;
 using WebServerProject.Models.Response;
 
 namespace WebServerProject.CSR.Contollers

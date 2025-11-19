@@ -8,6 +8,7 @@ namespace WebServerProject.CSR.Services.Stage
     public interface IStageService
     {
         public Task<StageDTO> GetStageAsync(int stageId);
+        public Task<List<StageDTO>> GetStageListAsync(int ChapterId);
     }
 
     public class StageService : IStageService
@@ -65,6 +66,25 @@ namespace WebServerProject.CSR.Services.Stage
             stageDTO.stageEnemies = enemyDTOs;
 
             return stageDTO;
+        }
+
+        public async Task<List<StageDTO>> GetStageListAsync(int ChapterId)
+        {
+            var stages = await _stageRepository.GetStageListAsync(ChapterId);
+            if(stages == null || stages.Count == 0)
+            {
+                throw new InvalidOperationException("스테이지 리스트를 찾을 수 없습니다.");
+            }
+
+            List<StageDTO> stageDTOs = new List<StageDTO>();
+            // 각 스테이지 정보 조회
+            foreach (var stage in stages)
+            {
+                StageDTO stageDTO = await GetStageAsync(stage.id);
+                stageDTOs.Add(stageDTO);
+            }
+
+            return stageDTOs;
         }
     }
 }

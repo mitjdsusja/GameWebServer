@@ -1,8 +1,7 @@
 ﻿using Humanizer.Localisation;
 using Microsoft.AspNetCore.Mvc;
 using WebServerProject.CSR.Services;
-using WebServerProject.Models.DTOs;
-using WebServerProject.Models.Request;
+using WebServerProject.Models.Request.User;
 using WebServerProject.Models.Response;
 
 namespace WebServerProject.CSR.Contollers

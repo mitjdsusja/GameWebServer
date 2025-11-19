@@ -1,5 +1,5 @@
 ﻿using SqlKata.Execution;
-using WebServerProject.Models.Entities.Gacha;
+using WebServerProject.Models.Entities.GachaEntity;
 
 namespace WebServerProject.CSR.Repositories.Gacha
 {

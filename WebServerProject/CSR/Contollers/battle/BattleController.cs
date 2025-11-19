@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebServerProject.CSR.Services;
-using WebServerProject.Models.Request;
-using WebServerProject.Models.Response;
+using WebServerProject.Models.Request.Battle;
+using WebServerProject.Models.Response.Battle;
 
 namespace WebServerProject.CSR.Contollers
 {
