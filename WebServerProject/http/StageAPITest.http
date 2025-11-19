@@ -1,0 +1,10 @@
+﻿@ReqeustTest_HostAdress = http://localhost:5000/api/stage
+
+### 배틀 요청
+POST {{ReqeustTest_HostAdress}}/list
+Content-Type: application/json
+
+{
+  "userId": "2",
+  "chapterId": "1"
+}
