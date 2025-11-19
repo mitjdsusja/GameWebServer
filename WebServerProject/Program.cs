@@ -1,6 +1,7 @@
 ﻿using MySqlConnector;
 using SqlKata.Compilers;
 using SqlKata.Execution;
+using System.Reflection;
 using WebServerProject.CSR.Repositories;
 using WebServerProject.CSR.Services;
 
@@ -8,6 +9,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 컨트롤러 추가
 builder.Services.AddControllers();
+
+// Swagger/OpenAPI 등록 (자동 API 문서 생성)
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    // XML 주석을 Swagger에 포함시키기 (Controller 주석 자동 반영)
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+        options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+});
 
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddSingleton<IAuthTokenService, AuthTokenService>();
@@ -45,6 +57,18 @@ var queryFactory = new QueryFactory(connection, compiler);
 builder.Services.AddSingleton<QueryFactory>(queryFactory);
 
 var app = builder.Build();
+
+// Swagger 미들웨어 추가
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebServerProject API v1");
+        c.RoutePrefix = string.Empty; // 루트(/)에서 Swagger 바로 열기
+    });
+}
+
 app.UseRouting();
 app.MapControllers();
 
