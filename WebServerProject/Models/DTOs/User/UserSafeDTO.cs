@@ -12,9 +12,9 @@ namespace WebServerProject.Models.DTOs.User
         public DateTime? lastLoginAt { get; set; }
         public int status { get; set; }
 
-        public UserStatsDTO stats { get; set; }
-        public UserProfilesDTO profiles { get; set; }
-        public UserResourcesDTO resources { get; set; }
+        public UserStatsDTO stat { get; set; }
+        public UserProfilesDTO profile { get; set; }
+        public UserResourcesDTO resource { get; set; }
 
         public static UserSafeDTO FromUser(Entities.UserEntity.User user)
         {
