@@ -55,9 +55,9 @@ namespace WebServerProject.CSR.Services
             var userProfiles = UserProfilesDTO.FromUserProfiles(profile);
             var userResources = UserResourcesDTO.FromUserResources(resources);
 
-            userModel.stats = userStats;
-            userModel.profiles = userProfiles;
-            userModel.resources = userResources;
+            userModel.stat = userStats;
+            userModel.profile = userProfiles;
+            userModel.resource = userResources;
 
             return userModel;
         }
