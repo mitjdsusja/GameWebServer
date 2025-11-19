@@ -9,6 +9,6 @@
         public string salt { get; set; } = null!;
         public DateTime created_at { get; set; }
         public DateTime? last_login_at { get; set; }
-        public string status { get; set; } = "active";
+        public int status { get; set; }
     }
 }

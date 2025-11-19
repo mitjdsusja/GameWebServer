@@ -62,7 +62,7 @@ namespace WebServerProject.CSR.Services.Auth
                 email = email,
                 password_hash = passwordHash,
                 salt = salt,
-                status = "active",
+                status = 1,
             };
 
             // 데이터베이스에 저장
@@ -87,7 +87,7 @@ namespace WebServerProject.CSR.Services.Auth
             }
 
             // 계정 상태 확인
-            if (user.status != "active")
+            if (user.status != 1)
             {
                 throw new InvalidOperationException($"계정이 {user.status} 상태입니다. 관리자에게 문의하세요.");
                     
