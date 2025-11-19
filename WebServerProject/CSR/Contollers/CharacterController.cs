@@ -19,21 +19,35 @@ namespace WebServerProject.CSR.Contollers
         [HttpPost("list")]
         public async Task<CharacterListResponse> GetCharacterList([FromBody] CharacterListRequest request)
         {
-            var characterList = await _characterService.GetUserCharacterDetailList(request.userId);
-            if (characterList == null || characterList.Count == 0)
+            try
+            {
+                var characterList = await _characterService.GetUserCharacterDetailList(request.userId);
+                
+                return new CharacterListResponse
+                {
+                    success = true,
+                    characters = characterList
+                };
+            }
+            catch (InvalidOperationException ex)
             {
                 return new CharacterListResponse
                 {
                     success = false,
-                    message = "캐릭터 없음"
+                    message = ex.Message,
                 };
             }
-
-            return new CharacterListResponse
+            catch (Exception ex)
             {
-                success = true,
-                characters = characterList
-            };
+                return new CharacterListResponse
+                {
+                    success = false,
+                    message = "캐릭터 목록을 불러오는 중 오류가 발생했습니다."
+                };
+            }
+            
+
+            
         }
     }
 }

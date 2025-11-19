@@ -2,7 +2,7 @@
 using WebServerProject.Models.Entities.User;
 using WebServerProject.Models.Utils.Auth;
 
-namespace WebServerProject.CSR.Services
+namespace WebServerProject.CSR.Services.Auth
 {
     public interface IAuthTokenService
     {

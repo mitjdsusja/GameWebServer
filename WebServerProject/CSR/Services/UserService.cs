@@ -6,7 +6,7 @@ namespace WebServerProject.CSR.Services
     public interface IUserService
     {
         public Task<UserSafeDTO> GetUserAsync(int userId);
-        public Task<(UserSafeDTO, UserStatsDTO, UserProfilesDTO, UserResourcesDTO)?> GetUserInfoAsync(int userId);
+        public Task<UserSafeDTO> GetUserDetailAsync(int userId);
     }
     public class UserService : IUserService
     {
@@ -31,26 +31,34 @@ namespace WebServerProject.CSR.Services
             return userDTO;
         }
 
-        public async Task<(UserSafeDTO, UserStatsDTO, UserProfilesDTO, UserResourcesDTO)?> GetUserInfoAsync(int userId)
+        public async Task<UserSafeDTO> GetUserDetailAsync(int userId)
         {
             var user = await _userRepository.GetUserByIdAsync(userId);
             if (user == null)
-                return null;
+            {
+                throw new InvalidOperationException("유저 정보가 없습니다.");
+            }
 
             var stats = await _userRepository.GetUserStatsByIdAsync(userId);
             var profile = await _userRepository.GetUserProfilesByIdAsync(userId);
             var resources = await _userRepository.GetUserResourcesByIdAsync(userId);
 
-            // 하나라도 없으면 null 반환
+            // 하나라도 없으면 예외 처리
             if (stats == null || profile == null || resources == null)
-                return null;
+            {
+                throw new InvalidOperationException("유저 상세 정보가 없습니다.");
+            }
 
             var userModel = UserSafeDTO.FromUser(user);
             var userStats = UserStatsDTO.FromUserStats(stats);
             var userProfiles = UserProfilesDTO.FromUserProfiles(profile);
             var userResources = UserResourcesDTO.FromUserResources(resources);
 
-            return (userModel, userStats, userProfiles, userResources);
+            userModel.stats = userStats;
+            userModel.profiles = userProfiles;
+            userModel.resources = userResources;
+
+            return userModel;
         }
     }
 }

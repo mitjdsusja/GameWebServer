@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Humanizer.Localisation;
+using Microsoft.AspNetCore.Mvc;
 using WebServerProject.CSR.Services;
 using WebServerProject.Models.DTOs;
 using WebServerProject.Models.Request;
@@ -21,27 +22,33 @@ namespace WebServerProject.CSR.Contollers
         [HttpPost("info")]
         public async Task<UserInfoResponse> GetUserInfo([FromBody] UserInfoRequest req)
         {
-            var userTuple = await _userService.GetUserInfoAsync(req.userId);
-            
-            if(userTuple == null)
+            try
+            {
+                var user = await _userService.GetUserDetailAsync(req.userId);
+
+                return new UserInfoResponse
+                {
+                    success = true,
+                    message = "유저 정보를 불러왔습니다.",
+                    user = user,
+                };
+            }
+            catch(InvalidOperationException ex)
             {
                 return new UserInfoResponse
                 {
                     success = false,
-                    message = "유저 정보 요청 실패"
+                    message = ex.Message
                 };
             }
-
-            var (user, stats, profiles, resources) = userTuple.Value;
-
-            return new UserInfoResponse
+            catch (Exception ex)
             {
-                success = true,
-                user = user,
-                stats = stats,
-                profiles = profiles,
-                resources = resources
-            };
+                return new UserInfoResponse
+                {
+                    success = false,
+                    message = "유저 정보 요청 중 오류가 발생했습니다. 관리자에게 문의하세요."
+                };
+            }        
         }
     }
 }

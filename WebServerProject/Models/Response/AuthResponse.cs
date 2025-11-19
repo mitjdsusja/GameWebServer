@@ -2,30 +2,30 @@
 {
     public class RegisterResponse
     {
-        public bool Success { get; set; }
-        public string Message { get; set; }
-        public int? UserId { get; set; }
+        public bool success { get; set; }
+        public string message { get; set; }
+        public int? userId { get; set; }
     }
 
     public class LoginResponse
     {
-        public bool Success { get; set; }
-        public string Message { get; set; }
-        public string Token { get; set; }
-        public int? UserId { get; set; }
-        public string Username { get; set; }
-        public DateTime? ExpiresAt { get; set; }
+        public bool success { get; set; }
+        public string message { get; set; }
+        public string token { get; set; }
+        public int? userId { get; set; }
+        public string sername { get; set; }
+        public DateTime? expiresAt { get; set; }
     }
 
     public class LogoutResponse
     {
-        public bool Success { get; set; }
-        public string Message { get; set; }
+        public bool success { get; set; }
+        public string message { get; set; }
     }
 
     public class ChangePasswordResponse
     {
-        public bool Success { get; set; }
-        public string Message { get; set; }
+        public bool success { get; set; }
+        public string message { get; set; }
     }
 }

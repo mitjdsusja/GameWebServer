@@ -8,8 +8,5 @@ namespace WebServerProject.Models.Response
         public string message { get; set; }
 
         public UserSafeDTO user { get; set; }
-        public UserStatsDTO stats { get; set; }
-        public UserProfilesDTO profiles { get; set; }
-        public UserResourcesDTO resources { get; set; }
     }
 }
