@@ -10,7 +10,7 @@ namespace WebServerProject.Models.DTOs.User
         public string email { get; set; }
         public DateTime createdAt { get; set; }
         public DateTime? lastLoginAt { get; set; }
-        public string status { get; set; }
+        public int status { get; set; }
 
         public UserStatsDTO stats { get; set; }
         public UserProfilesDTO profiles { get; set; }
