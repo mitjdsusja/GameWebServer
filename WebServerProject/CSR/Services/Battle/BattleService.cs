@@ -37,14 +37,39 @@ namespace WebServerProject.CSR.Services
             var deckDTO = await _deckService.GetDeckAsync(deckId);
 
             // TODO : 전투
-
-            return new StartStageBattleResult
+            // 임시로 총 공격력 비교 후 승패 결정
+            int totalAttackPower = 0;
+            foreach (var slot in deckDTO.deckSlots)
             {
-                success = true,
-                message = "전투가 성공적으로 시작되었습니다.",
-                rewardGold = stageDTO.rewardGold,
-                rewardExp = stageDTO.rewardExp
-            };
+                totalAttackPower += slot.characterDetailDTO.characterTemplate.base_attack;
+            }
+            int totalEnemyAttackPower = 0;
+            foreach (var enemy in stageDTO.stageEnemies)
+            {
+                totalEnemyAttackPower += enemy.enemyTemplate.attack;
+            }
+
+            // 전투 결과 반환
+            if (totalAttackPower <= totalEnemyAttackPower)
+            {
+                return new StartStageBattleResult
+                {
+                    success = false,
+                    message = "전투에서 패배하였습니다.",
+                    rewardGold = 0,
+                    rewardExp = 0
+                };
+            }
+            else
+            {
+                return new StartStageBattleResult
+                {
+                    success = true,
+                    message = "전투에서 승리하였습니다.",
+                    rewardGold = stageDTO.rewardGold,
+                    rewardExp = stageDTO.rewardExp
+                };
+            }
         }
     }
 }
