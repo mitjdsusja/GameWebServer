@@ -44,15 +44,15 @@ namespace WebServerProject.CSR.Services
                 throw new InvalidOperationException("가챠 목록 데이터를 불러올 수 없습니다.");
             }
 
+            foreach (var gachaMasger in gachaMasterList)
+            {
+                gachaMasterDTOList.Add(GachaMasterDTO.FromGachaMaster(gachaMasger));
+            }
             if(gachaMasterDTOList.Count == 0)
             {
                 throw new InvalidOperationException("등록된 가챠가 없습니다.");
             }
 
-            foreach (var gachaMaster in gachaMasterList)
-            {
-                gachaMasterDTOList.Add(GachaMasterDTO.FromGachaMaster(gachaMaster));
-            }
             return gachaMasterDTOList;
         }
 
