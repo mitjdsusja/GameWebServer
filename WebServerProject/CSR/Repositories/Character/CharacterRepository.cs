@@ -26,7 +26,7 @@ namespace WebServerProject.CSR.Repositories.Character
         {
             // 유저 캐릭터 목록 조회
             var characters = await _db.Query("user_characters")
-                                      .Where("account_id", userId)
+                                      .Where("user_id", userId)
                                       .GetAsync<UserCharacter>();
 
             return characters.ToList();
@@ -45,7 +45,7 @@ namespace WebServerProject.CSR.Repositories.Character
         {
             // 중복 확인
             var existingCharacter = await _db.Query("user_characters")
-                                             .Where("account_id", userId)
+                                             .Where("user_id", userId)
                                              .Where("template_id", characterId)
                                              .FirstOrDefaultAsync<UserCharacter>();
             if (existingCharacter != null)
