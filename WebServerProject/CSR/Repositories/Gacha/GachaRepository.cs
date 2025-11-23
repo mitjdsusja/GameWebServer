@@ -37,7 +37,7 @@ namespace WebServerProject.CSR.Repositories.Gacha
         public async Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId)
         {
             var result = await _db.Query("gacha_rarity_rates")
-                            .Where("id", gachaId)
+                            .Where("gacha_id", gachaId)
                             .GetAsync<GachaRarityRate>();
 
             return result.ToList();

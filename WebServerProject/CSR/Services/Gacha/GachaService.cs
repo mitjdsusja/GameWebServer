@@ -4,6 +4,7 @@ using WebServerProject.CSR.Repositories.User;
 using WebServerProject.CSR.Services.Gacha;
 using WebServerProject.Models.DTOs.Gacha;
 using WebServerProject.Models.DTOs.UserEntity;
+using WebServerProject.Models.Entities.CharacterEntity;
 using WebServerProject.Models.Entities.GachaEntity;
 
 namespace WebServerProject.CSR.Services
@@ -88,7 +89,11 @@ namespace WebServerProject.CSR.Services
                 throw new InvalidOperationException("가챠 아이템 선택에 실패했습니다.");
             }
 
-            // 결과 저장
+            // 결과 저장 (트랜잭션 처리 필요) 
+            // 재화 소모
+            //
+
+            // 보상 지급
             var result = await GrantGachaRewardAsync(userId, selectedItem);
             if(result == null)
             {
@@ -107,7 +112,8 @@ namespace WebServerProject.CSR.Services
             return new GachaDrawResultDTO
             {
                 Success = true,
-                Message = "뽑기 성공",
+                Message = result.Message,
+                isNew = result.IsNew,
 
                 DrawnItem = GachaPoolDTO.FromGachaPool(selectedItem),
                 RemainingResources = new UserResourcesDTO
@@ -122,23 +128,37 @@ namespace WebServerProject.CSR.Services
         private async Task<GachaRewardResultDTO> GrantGachaRewardAsync(int userId, GachaPool poolItem)
         {
             var result = new GachaRewardResultDTO();
-            result.ItemType = poolItem.item_type;
-            result.ItemId = poolItem.item_id;
-            result.Rarity = poolItem.rarity;
+            result.Success = true;
+            result.gachaPool = GachaPoolDTO.FromGachaPool(poolItem);
 
             switch (poolItem.item_type)
             {
                 case (int)GachaPool.ItemType.ITEM_CHARACTER:
                     // 캐릭터 획득 처리
-                    var addCharacterResult = await _characterRepository.AddCharacterToUserAsync(userId, poolItem.item_id);
-                    if (addCharacterResult == null)
+                    // 중복 확인
+                    UserCharacter userCharacter =  await _characterRepository.GetUserCharacterAsync(userId, poolItem.item_id);
+                    
+                    // 중복된 캐릭터 획득 
+                    if(userCharacter != null)
                     {
-                        result.Success = false;
-                        result.Message = "캐릭터 추가 중 오류가 발생했습니다.";
-                        break;
+                        result.Message = "중복된 캐릭터 입니다.";
+                        result.IsNew = true;
+
+                        // 중복 보상으로 대체 지급
+                        //
                     }
-                    result.Success = addCharacterResult.Success;
-                    result.Message = addCharacterResult.Message;
+                    else
+                    {
+                        result.Message = "새로운 캐릭터 입니다.";
+                        result.IsNew = false;
+
+                        // 기존 보상 지급
+                        var addCharacerResult = await _characterRepository.AddCharacterToUserAsync(userId, poolItem.item_id);
+                        if (addCharacerResult == 0)
+                        {
+                            throw new Exception("뽑기 결과 저장 중 오류가 발생했습니다.");
+                        }
+                    }
 
                     break;
 

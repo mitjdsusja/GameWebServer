@@ -8,6 +8,7 @@ namespace WebServerProject.CSR.Services.Gacha
     {
         public bool Success { get; set; }
         public string Message { get; set; }
+        public bool isNew { get; set; } = false;
         public GachaPoolDTO? DrawnItem { get; set; }
         public UserResourcesDTO? RemainingResources { get; set; }
     }

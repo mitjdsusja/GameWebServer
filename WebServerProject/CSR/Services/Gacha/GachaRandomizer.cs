@@ -1,4 +1,5 @@
-﻿using WebServerProject.CSR.Repositories.Gacha;
+﻿using System;
+using WebServerProject.CSR.Repositories.Gacha;
 using WebServerProject.Models.Entities.GachaEntity;
 
 namespace WebServerProject.CSR.Services.Gacha
@@ -10,10 +11,18 @@ namespace WebServerProject.CSR.Services.Gacha
 
     public class GachaRandomizer : IGachaRandomizer
     {
+        public readonly Random _random;
+
+        public ILogger<GachaRandomizer> _logger;
         public readonly IGachaRepository _gachaRepository;
 
-        public GachaRandomizer(IGachaRepository gachaRepository)
+        public GachaRandomizer(
+            ILogger<GachaRandomizer> logger,
+            IGachaRepository gachaRepository)
         {
+            _random = new Random();
+
+            _logger = logger;
             _gachaRepository = gachaRepository;
         }
 
@@ -32,6 +41,7 @@ namespace WebServerProject.CSR.Services.Gacha
             {
                 throw new InvalidOperationException("가챠 확률 정보를 불러오는 데 실패했습니다.");
             }
+            rarityRates = rarityRates.OrderBy(r => r.rarity).ToList();
 
             // 각 희귀도 확률 합산
             var totalRate = rarityRates.Sum(r => r.rate);
@@ -41,8 +51,10 @@ namespace WebServerProject.CSR.Services.Gacha
             }
 
             // 난수 기반 희귀도 결정
-            var random = new Random();
-            double roll = random.NextDouble() * totalRate;
+            // TODO : Random() 객체 매번 생성x 
+            // 트래픽 몰릴시 같은 시드값이 사용될 가능성이 있음. 
+            double roll = _random.NextDouble() * totalRate;
+            _logger.LogInformation("Gacha [{GachaCode}] roll: {Roll} / totalRate: {TotalRate}", gachaCode, roll, totalRate);
             double cumulative = 0;
             int selectedRarity = 1;
 
@@ -64,7 +76,7 @@ namespace WebServerProject.CSR.Services.Gacha
             }
 
             // 랜덤 아이템 선택
-            var selectedItem = poolItems[random.Next(poolItems.Count)];
+            var selectedItem = poolItems[_random.Next(poolItems.Count)];
 
             // 반환 
 
