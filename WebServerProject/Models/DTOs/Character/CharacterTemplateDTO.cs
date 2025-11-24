@@ -6,7 +6,7 @@ namespace WebServerProject.Models.DTOs.Character
     {
         public string name { get; set; }
         public string? description { get; set; }
-        public string rarity { get; set; }
+        public int rarity { get; set; }
         public int base_hp { get; set; }
         public int base_attack { get; set; }
         public int Base_defense { get; set; }
