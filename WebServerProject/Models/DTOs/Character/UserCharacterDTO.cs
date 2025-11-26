@@ -4,8 +4,8 @@ namespace WebServerProject.Models.DTOs.Character
 {
     public class UserCharacterDTO
     {
-        public int user_id { get; set; }
-        public int template_id { get; set; }
+        public int userId { get; set; }
+        public int templateId { get; set; }
         public int level { get; set; } = 1;
         public int experience { get; set; }
         public int stars { get; set; }
@@ -15,8 +15,8 @@ namespace WebServerProject.Models.DTOs.Character
         {
             var result = new UserCharacterDTO
             {
-                user_id = character.user_id,
-                template_id = character.template_id,
+                userId = character.user_id,
+                templateId = character.template_id,
                 level = character.level,
                 experience = character.experience,
                 stars = character.stars,
