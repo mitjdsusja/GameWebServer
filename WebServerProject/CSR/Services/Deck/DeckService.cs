@@ -171,7 +171,7 @@ namespace WebServerProject.CSR.Services.Deck
                 // 빈 슬롯
                 if (slot.user_character_id == null)
                 {
-                    slotDTO.characterDetailDTO = null;
+                    slotDTO.characterDetail = null;
                     result.Add(slotDTO);
                     continue;
                 }
@@ -188,7 +188,7 @@ namespace WebServerProject.CSR.Services.Deck
                     throw new InvalidOperationException($"유효하지 않은 캐릭터 템플릿입니다. (TemplateId: {userCharacter.template_id})");
                 }
 
-                slotDTO.characterDetailDTO = new CharacterDetailDTO
+                slotDTO.characterDetail = new CharacterDetailDTO
                 {
                     userCharacter = UserCharacterDTO.FromUserCharacter(userCharacter),
                     characterTemplate = CharacterTemplateDTO.FromCharacterTemplate(characterTemplate)
