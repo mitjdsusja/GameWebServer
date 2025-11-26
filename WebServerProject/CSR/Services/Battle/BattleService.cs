@@ -39,9 +39,18 @@ namespace WebServerProject.CSR.Services
             // TODO : 전투
             // 임시로 총 공격력 비교 후 승패 결정
             int totalAttackPower = 0;
+            if(deckDTO.deckSlots == null)
+            {
+                throw new InvalidOperationException($"User{userId} 덱{deckId} {deckDTO.deckIndex}의 슬롯이 없습니다.");
+            }
+
             foreach (var slot in deckDTO.deckSlots)
             {
-                totalAttackPower += slot.characterDetailDTO.characterTemplate.base_attack;
+                if(slot.characterDetail == null)
+                {
+                    throw new InvalidOperationException($"User{userId} 덱{deckId} 슬롯{slot.slotIndex}의 characterDetail이 없습니다.");
+                }
+                totalAttackPower += slot.characterDetail.characterTemplate.baseAttack;
             }
             int totalEnemyAttackPower = 0;
             foreach (var enemy in stageDTO.stageEnemies)
