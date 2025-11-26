@@ -7,9 +7,9 @@ namespace WebServerProject.Models.DTOs.Character
         public string name { get; set; }
         public string? description { get; set; }
         public int rarity { get; set; }
-        public int base_hp { get; set; }
-        public int base_attack { get; set; }
-        public int Base_defense { get; set; }
+        public int baseHp { get; set; }
+        public int baseAttack { get; set; }
+        public int BaseDefense { get; set; }
 
         public static CharacterTemplateDTO FromCharacterTemplate(CharacterTemplate characterTemplate)
         {
@@ -18,9 +18,9 @@ namespace WebServerProject.Models.DTOs.Character
                 name = characterTemplate.name,
                 description = characterTemplate.description,
                 rarity = characterTemplate.rarity,
-                base_hp = characterTemplate.base_hp,
-                base_attack = characterTemplate.base_attack,
-                Base_defense = characterTemplate.Base_defense
+                baseHp = characterTemplate.base_hp,
+                baseAttack = characterTemplate.base_attack,
+                BaseDefense = characterTemplate.Base_defense
             };
             return model;
         }
