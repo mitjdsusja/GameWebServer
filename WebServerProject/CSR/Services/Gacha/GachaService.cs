@@ -6,6 +6,7 @@ using WebServerProject.Models.DTOs.Gacha;
 using WebServerProject.Models.DTOs.UserEntity;
 using WebServerProject.Models.Entities.CharacterEntity;
 using WebServerProject.Models.Entities.GachaEntity;
+using WebServerProject.Models.Entities.UserEntity;
 
 namespace WebServerProject.CSR.Services
 {
@@ -91,7 +92,11 @@ namespace WebServerProject.CSR.Services
 
             // 결과 저장 (트랜잭션 처리 필요) 
             // 재화 소모
-            //
+            var updateResourcesResult = await _userRepository.UpdateResourcesAsync(user.id, new UserResources { gold = resource.gold, diamond = resource.diamond - 100 });
+            if(updateResourcesResult == false)
+            {
+                throw new InvalidOperationException($"{user.id}의 Resources 업데이트 실패");
+            }
 
             // 보상 지급
             var result = await GrantGachaRewardAsync(userId, selectedItem);

@@ -17,6 +17,7 @@ namespace WebServerProject.CSR.Repositories.User
         Task<int> CreateAsync(UserEntity user);
         Task<bool> UpdateAsync(UserEntity user);
         Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime);
+        Task<bool> UpdateResourcesAsync(int userId, UserResourcesEntity resources);
     }
     public class UserRepository : IUserRepository
     {
@@ -104,6 +105,19 @@ namespace WebServerProject.CSR.Repositories.User
                 .UpdateAsync(new { last_login_at = loginTime });
 
             return affected > 0;
+        }
+
+        public async Task<bool> UpdateResourcesAsync(int userId, UserResourcesEntity resources)
+        {
+            var result = await _db.Query("user_resources")
+                                  .Where ("user_id", userId)
+                                  .UpdateAsync(new
+                                  {
+                                      gold = resources.gold,
+                                      diamond = resources.diamond,
+                                  });
+
+            return result == 1;
         }
     }
 }
