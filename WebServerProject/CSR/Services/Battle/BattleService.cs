@@ -27,13 +27,10 @@ namespace WebServerProject.CSR.Services
         }
         public async Task<StartStageBattleResult> StartStageBattleAsync(int userId, int stageId, int deckIndex)
         {
-            // 유저 검증 
-            var userDTO = await _userService.GetUserAsync(userId);
-
-            // 스테이지 검증
+            // 스테이지 정보
             var stageDTO = await _stageService.GetStageAsync(stageId);
 
-            // 덱 검증
+            // 덱 정보
             var deckDTO = await _deckService.GetDeckAsync(userId, deckIndex);
 
             // TODO : 전투
