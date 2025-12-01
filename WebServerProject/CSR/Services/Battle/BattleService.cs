@@ -25,7 +25,7 @@ namespace WebServerProject.CSR.Services
             _stageService = stageService;
             _deckService = deckService;
         }
-        public async Task<StartStageBattleResult> StartStageBattleAsync(int userId, int stageId, int deckId)
+        public async Task<StartStageBattleResult> StartStageBattleAsync(int userId, int stageId, int deckIndex)
         {
             // 유저 검증 
             var userDTO = await _userService.GetUserAsync(userId);
@@ -34,21 +34,21 @@ namespace WebServerProject.CSR.Services
             var stageDTO = await _stageService.GetStageAsync(stageId);
 
             // 덱 검증
-            var deckDTO = await _deckService.GetDeckAsync(deckId);
+            var deckDTO = await _deckService.GetDeckAsync(userId, deckIndex);
 
             // TODO : 전투
             // 임시로 총 공격력 비교 후 승패 결정
             int totalAttackPower = 0;
             if(deckDTO.deckSlots == null)
             {
-                throw new InvalidOperationException($"User{userId} 덱{deckId} {deckDTO.deckIndex}의 슬롯이 없습니다.");
+                throw new InvalidOperationException($"User{userId} 덱{deckIndex} {deckDTO.deckIndex}의 슬롯이 없습니다.");
             }
 
             foreach (var slot in deckDTO.deckSlots)
             {
                 if(slot.characterDetail == null)
                 {
-                    throw new InvalidOperationException($"User{userId} 덱{deckId} 슬롯{slot.slotIndex}의 characterDetail이 없습니다.");
+                    continue;
                 }
                 totalAttackPower += slot.characterDetail.characterTemplate.baseAttack;
             }

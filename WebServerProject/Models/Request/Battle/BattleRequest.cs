@@ -4,6 +4,6 @@
     {
         public int userId { get; set; }
         public int stageId { get; set; }
-        public int deckId { get; set; }
+        public int deckIndex { get; set; }
     }
 }

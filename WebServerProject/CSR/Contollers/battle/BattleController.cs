@@ -25,7 +25,7 @@ namespace WebServerProject.CSR.Contollers
         {
             try
             {
-                var result = await _battleService.StartStageBattleAsync(reqeust.userId, reqeust.stageId, reqeust.deckId);
+                var result = await _battleService.StartStageBattleAsync(reqeust.userId, reqeust.stageId, reqeust.deckIndex);
 
                 return new StartStageBattleResponse
                 {

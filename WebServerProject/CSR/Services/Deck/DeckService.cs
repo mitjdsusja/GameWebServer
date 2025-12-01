@@ -8,7 +8,7 @@ namespace WebServerProject.CSR.Services.Deck
 {
     public interface IDeckService
     {
-        public Task<DeckDTO> GetDeckAsync(int deckId);
+        public Task<DeckDTO> GetDeckAsync(int userId, int deckIndex);
         public Task<List<DeckDTO>> GetDeckListAsync(int userId);
         public Task<DeckDTO> UpdateDeckAsync(int userId, int deckId, List<int> characterId);
     }
@@ -26,9 +26,9 @@ namespace WebServerProject.CSR.Services.Deck
             _characterRepository = characterRepository;
         }
 
-        public async Task<DeckDTO> GetDeckAsync(int deckId)
+        public async Task<DeckDTO> GetDeckAsync(int userId, int deckIndex)
         {
-            var deck = await _deckRepository.GetDeckAsync(deckId);
+            var deck = await _deckRepository.GetDeckAsync(userId, deckIndex);
             if(deck == null)
             {
                 throw new InvalidOperationException("덱이 존재하지 않습니다.");
@@ -85,10 +85,10 @@ namespace WebServerProject.CSR.Services.Deck
         }
 
         // TODO : 트렌젝션 처리 필요
-        public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckId, List<int> characterIds)
+        public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckIndex, List<int> characterIds)
         {
             // 덱 검증
-            var deck = await _deckRepository.GetDeckAsync(deckId);
+            var deck = await _deckRepository.GetDeckAsync(userId, deckIndex);
             if (deck == null)
             {
                 throw new InvalidOperationException("덱이 존재하지 않습니다.");
@@ -130,7 +130,7 @@ namespace WebServerProject.CSR.Services.Deck
             // 추후 트랜잭션 처리 필요
 
             // 기존 슬롯 삭제
-            await _deckRepository.DeleteDeckSlotsAsync(deckId);
+            await _deckRepository.DeleteDeckSlotsAsync(deck.Id);
 
             // 새로운 슬롯 삽입
             for (int i = 0; i < characterIds.Count; i++)
@@ -140,7 +140,7 @@ namespace WebServerProject.CSR.Services.Deck
 
                 var newSlot = new DeckSlot
                 {
-                    deck_id = deckId,
+                    deck_id = deck.Id,
                     slot_order = (byte)slotOrder,
                     user_character_id = userCharacterId
                 };
@@ -149,7 +149,7 @@ namespace WebServerProject.CSR.Services.Deck
             }
 
             // 갱신된 덱 정보를 읽어와 DTO로 반환
-            var updatedDeck = await GetDeckAsync(deckId); // 너의 기존 GetDeckList 로직과 동일
+            var updatedDeck = await GetDeckAsync(userId, deckIndex); // 너의 기존 GetDeckList 로직과 동일
 
             return updatedDeck;
         }

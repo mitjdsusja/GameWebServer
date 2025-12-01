@@ -7,7 +7,7 @@ namespace WebServerProject.CSR.Repositories.Deck
 {
     public interface IDeckRepository
     {
-        public Task<DeckEntity> GetDeckAsync(int deckId);
+        public Task<DeckEntity> GetDeckAsync(int userId, int deckIndex);
         public Task<List<DeckEntity>> GetDeckListAsync(int userId);
         public Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId);
 
@@ -24,10 +24,11 @@ namespace WebServerProject.CSR.Repositories.Deck
             _db = db;
         }
 
-        public async Task<DeckEntity> GetDeckAsync(int deckId)
+        public async Task<DeckEntity> GetDeckAsync(int userId, int deckIndex)
         {
             var deck = await _db.Query("decks")
-                                .Where("id", deckId)
+                                .Where("user_id", userId)
+                                .Where("deck_index", deckIndex)
                                 .FirstOrDefaultAsync<DeckEntity>();
 
             return deck;
