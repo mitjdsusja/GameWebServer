@@ -39,7 +39,6 @@ namespace WebServerProject.CSR.Services.Auth
 
         // TODO :
         // 인증 트랜잭션 처리
-        // DB 데이터 생성 트랜잭션 처리
         public async Task<RegisterResult> RegisterAsync(string username, string email, string password)
         {
             var existingUserByUsername = await _userRepository.GetUserByUsernameAsync(username);
@@ -89,20 +88,18 @@ namespace WebServerProject.CSR.Services.Auth
             conn.Open();
             using var tx = conn.BeginTransaction();
 
-            var dbTx = new QueryFactory(conn, _db.Compiler);
-
             try
             {
                 // users
-                int userId = await _userRepository.CreateUserAsync(newUser, dbTx, tx);
+                int userId = await _userRepository.CreateUserAsync(newUser, _db, tx);
 
                 // 프로필, 스탯, 자원
-                await _userRepository.CreateUserProfilesAsync(userId, dbTx, tx);
-                await _userRepository.CreateUserStatsAsync(userId, dbTx, tx);
-                await _userRepository.CreateUserResourcesAsync(userId, dbTx, tx);
+                await _userRepository.CreateUserProfilesAsync(userId, _db, tx);
+                await _userRepository.CreateUserStatsAsync(userId, _db, tx);
+                await _userRepository.CreateUserResourcesAsync(userId, _db, tx);
 
                 // 덱
-                await _deckService.CreateDefaultDecksAsync(userId, dbTx, tx);
+                await _deckService.CreateDefaultDecksAsync(userId, _db, tx);
 
                 // 전부 성공 → 커밋
                 tx.Commit();

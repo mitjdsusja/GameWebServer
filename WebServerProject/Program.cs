@@ -58,13 +58,13 @@ var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
 
 var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser};password={dbPass}";
 
-// SQLKata 초기화
-var connection = new MySqlConnection(connectionString);
-var compiler = new MySqlCompiler();
-var queryFactory = new QueryFactory(connection, compiler);
-
-// DI 등록
-builder.Services.AddSingleton<QueryFactory>(queryFactory);
+// SQLKata / QueryFactory DI 등록 (요청당 1개: Scoped)
+builder.Services.AddScoped<QueryFactory>(sp =>
+{
+    var connection = new MySqlConnection(connectionString); // 요청마다 새 커넥션
+    var compiler = new MySqlCompiler();
+    return new QueryFactory(connection, compiler);
+});
 
 var app = builder.Build();
 

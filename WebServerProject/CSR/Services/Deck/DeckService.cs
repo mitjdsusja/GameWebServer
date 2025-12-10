@@ -18,13 +18,16 @@ namespace WebServerProject.CSR.Services.Deck
 
     public class DeckService : IDeckService
     {
+        private readonly QueryFactory _db;
         private readonly IDeckRepository _deckRepository;
         private readonly ICharacterRepository _characterRepository;
 
         public DeckService(
+            QueryFactory db,
             IDeckRepository deckRepository,
             ICharacterRepository characterRepository)
         {
+            _db = db;
             _deckRepository = deckRepository;
             _characterRepository = characterRepository;
         }
