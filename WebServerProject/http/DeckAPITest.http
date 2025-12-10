@@ -1,4 +1,4 @@
-﻿@ReqeustTest_HostAdress = http://localhost:5000/api/deck
+﻿@ReqeustTest_HostAdress = http://localhost:80/api/deck
 
 ### 덱 목록 요청
 POST {{ReqeustTest_HostAdress}}/list
@@ -12,7 +12,7 @@ Content-Type: application/json
 POST {{ReqeustTest_HostAdress}}/update
 Content-Type: application/json
 {
-  "userId" : "2",
+  "userId" : "8",
   "deckIndex" : "1",
   "characterIds" : [ "0", "1", "0" ]
 }

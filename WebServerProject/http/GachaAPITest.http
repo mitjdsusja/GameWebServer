@@ -1,4 +1,4 @@
-﻿@ReqeustTest_HostAdress = http://localhost:5000/api/gacha
+﻿@ReqeustTest_HostAdress = http://localhost:80/api/gacha
 
 ### 뽑기 리스트 요청
 POST {{ReqeustTest_HostAdress}}/list
@@ -13,6 +13,6 @@ POST {{ReqeustTest_HostAdress}}/draw
 Content-Type: application/json
 
 {
-  "userId": "2",
+  "userId": "8",
   "gachaCode": "test_gacha"
 }

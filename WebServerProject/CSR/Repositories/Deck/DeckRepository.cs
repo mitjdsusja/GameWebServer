@@ -11,8 +11,8 @@ namespace WebServerProject.CSR.Repositories.Deck
         public Task<List<DeckEntity>> GetDeckListAsync(int userId);
         public Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId);
 
-        public Task DeleteDeckSlotsAsync(int deckId);
-        public Task InsertDeckSlotAsync(DeckSlotEntity slot);
+        public Task DeleteDeckSlotsAsync(int deckId, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task InsertDeckSlotAsync(DeckSlotEntity slot, QueryFactory? db = null, IDbTransaction? tx = null);
 
         public Task<int> CreateDeckAsync(DeckEntity deck, QueryFactory? db = null, IDbTransaction? tx = null);
         public Task CreateDeckSlotAsync(DeckSlotEntity deckSlot, QueryFactory? db = null, IDbTransaction? tx = null);
@@ -56,22 +56,26 @@ namespace WebServerProject.CSR.Repositories.Deck
             return deckSlots.ToList();
         }
 
-        public async Task DeleteDeckSlotsAsync(int deckId)
+        public async Task DeleteDeckSlotsAsync(int deckId, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            await _db.Query("deck_slots")
+            var q = db ?? _db;
+
+            await q.Query("deck_slots")
                      .Where("deck_id", deckId)
-                     .DeleteAsync();
+                     .DeleteAsync(tx);
         }
 
-        public async Task InsertDeckSlotAsync(DeckSlotEntity slot)
+        public async Task InsertDeckSlotAsync(DeckSlotEntity slot, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            await _db.Query("deck_slots")
+            var q = db ?? _db;
+
+            await q.Query("deck_slots")
                      .InsertAsync(new
                      {
                          slot.deck_id,
                          slot.user_character_id,
                          slot.slot_order
-                     });
+                     }, tx);
         }
 
         public async Task<int> CreateDeckAsync(DeckEntity deck, QueryFactory? db = null, IDbTransaction? tx = null)

@@ -90,7 +90,6 @@ namespace WebServerProject.CSR.Services.Deck
             return deckDTOs;
         }
 
-        // TODO : 트렌젝션 처리 필요
         public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckIndex, List<int> characterIds)
         {
             // 덱 검증
@@ -123,7 +122,7 @@ namespace WebServerProject.CSR.Services.Deck
                 var userCharacter = await _characterRepository.GetUserCharacterAsync(cid);
                 if (userCharacter == null)
                 {
-                    throw new InvalidOperationException($"캐릭터 {cid}는 존재하지 않습니다.");
+                    throw new InvalidOperationException($"해당 유저는 캐릭터 {cid}를 소유하고 있지 않습니다.");
                 }
                 else if (userCharacter.user_id != userId)
                 {
@@ -131,27 +130,37 @@ namespace WebServerProject.CSR.Services.Deck
                 }
             }
 
-            // TODO : 삭제, 삽입 트랜잭션 처리 필요
-            // 현재 간단히 삭제 후 삽입하는 방식으로 구현
-            // 추후 트랜잭션 처리 필요
+            var conn = _db.Connection;
+            conn.Open();
+            using var tx = conn.BeginTransaction();
 
-            // 기존 슬롯 삭제
-            await _deckRepository.DeleteDeckSlotsAsync(deck.Id);
-
-            // 새로운 슬롯 삽입
-            for (int i = 0; i < characterIds.Count; i++)
+            try
             {
-                int slotOrder = i + 1;
-                int? userCharacterId = characterIds[i] > 0 ? characterIds[i] : null;
+                // 기존 슬롯 삭제
+                await _deckRepository.DeleteDeckSlotsAsync(deck.Id, _db, tx);
 
-                var newSlot = new DeckSlot
+                // 새로운 슬롯 삽입
+                for (int i = 0; i < characterIds.Count; i++)
                 {
-                    deck_id = deck.Id,
-                    slot_order = (byte)slotOrder,
-                    user_character_id = userCharacterId
-                };
+                    int slotOrder = i + 1;
+                    int? userCharacterId = characterIds[i] > 0 ? characterIds[i] : null;
 
-                await _deckRepository.InsertDeckSlotAsync(newSlot);
+                    var newSlot = new DeckSlot
+                    {
+                        deck_id = deck.Id,
+                        slot_order = (byte)slotOrder,
+                        user_character_id = userCharacterId
+                    };
+
+                    await _deckRepository.InsertDeckSlotAsync(newSlot, _db, tx);
+                }
+
+                tx.Commit();
+            }
+            catch (Exception)
+            {
+                tx.Rollback();
+                throw;
             }
 
             // 갱신된 덱 정보를 읽어와 DTO로 반환

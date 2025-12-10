@@ -1,4 +1,4 @@
-﻿@ReqeustTest_HostAdress = http://localhost:5000/api/user
+﻿@ReqeustTest_HostAdress = http://localhost:80/api/user
 @auth_token = 1111
 
 ### 유저 정보 요청

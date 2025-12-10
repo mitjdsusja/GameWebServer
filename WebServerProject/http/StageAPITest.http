@@ -1,4 +1,4 @@
-﻿@ReqeustTest_HostAdress = http://localhost:5000/api/stage
+﻿@ReqeustTest_HostAdress = http://localhost:80/api/stage
 
 ### 배틀 요청
 POST {{ReqeustTest_HostAdress}}/list
