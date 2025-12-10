@@ -40,7 +40,7 @@ CREATE TABLE user_stats (
 -- =========================
 -- user_profile
 -- =========================
-CREATE TABLE user_profile (
+CREATE TABLE user_profiles (
   user_id INT PRIMARY KEY,
   nickname VARCHAR(50),
   introduction TEXT,

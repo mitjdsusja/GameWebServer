@@ -1,4 +1,6 @@
-﻿using WebServerProject.CSR.Repositories.User;
+﻿using SqlKata.Execution;
+using WebServerProject.CSR.Repositories.User;
+using WebServerProject.CSR.Services.Deck;
 using WebServerProject.Models.Entities.UserEntity;
 
 namespace WebServerProject.CSR.Services.Auth
@@ -16,40 +18,57 @@ namespace WebServerProject.CSR.Services.Auth
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IAuthTokenService _tokenService;
-        private readonly ILogger<AuthService> _logger;
+        private readonly QueryFactory _db;
+
+        private readonly IDeckService _deckService;
 
         public AuthService(
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
             IAuthTokenService tokenService,
-            ILogger<AuthService> loger)
+            QueryFactory db,
+            IDeckService deckService)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
-            _logger = loger;
+            _db = db;
+
+            _deckService = deckService;
         }
 
+        // TODO :
+        // 인증 트랜잭션 처리
+        // DB 데이터 생성 트랜잭션 처리
         public async Task<RegisterResult> RegisterAsync(string username, string email, string password)
         {
-            // 사용자 이름 중복 확인
             var existingUserByUsername = await _userRepository.GetUserByUsernameAsync(username);
             if (existingUserByUsername != null)
             {
-                throw new InvalidOperationException("이미 사용 중인 사용자 이름입니다.");
+                return new RegisterResult
+                {
+                    success = false,
+                    message = "이미 사용 중인 사용자 이름입니다."
+                };
             }
 
-            // 이메일 중복 확인
             var existingUserByEmail = await _userRepository.GetUserByEmailAsync(email);
             if (existingUserByEmail != null)
             {
-                throw new InvalidOperationException("이미 사용 중인 이메일 주소입니다.");
+                return new RegisterResult
+                {
+                    success = false,
+                    message = "이미 사용 중인 이메일 주소입니다."
+                };
             }
 
-            // 비밀번호 유효성 검사
             if (string.IsNullOrEmpty(password) || password.Length < 8)
             {
-                throw new InvalidOperationException("비밀번호는 최소 8자 이상이어야 합니다.");
+                return new RegisterResult
+                {
+                    success = false,
+                    message = "비밀번호는 최소 8자 이상이어야 합니다."
+                };
             }
 
             // 비밀번호 해싱
@@ -62,18 +81,46 @@ namespace WebServerProject.CSR.Services.Auth
                 email = email,
                 password_hash = passwordHash,
                 salt = salt,
-                status = 1,
+                status = (int)User.UserStatus.Active,
             };
 
-            // 데이터베이스에 저장
-            int userId = await _userRepository.CreateAsync(newUser);
+            // 테이블 데이터 생성 트랜잭션 처리
+            var conn = _db.Connection;
+            conn.Open();
+            using var tx = conn.BeginTransaction();
 
-            return new RegisterResult
+            var dbTx = new QueryFactory(conn, _db.Compiler);
+
+            try
             {
-                success = true,
-                message = "회원가입이 완료되었습니다.",
-                userId = userId
-            };
+                // users
+                int userId = await _userRepository.CreateUserAsync(newUser, dbTx, tx);
+
+                // 프로필, 스탯, 자원
+                await _userRepository.CreateUserProfilesAsync(userId, dbTx, tx);
+                await _userRepository.CreateUserStatsAsync(userId, dbTx, tx);
+                await _userRepository.CreateUserResourcesAsync(userId, dbTx, tx);
+
+                // 덱
+                await _deckService.CreateDefaultDecksAsync(userId, dbTx, tx);
+
+                // 전부 성공 → 커밋
+                tx.Commit();
+
+                return new RegisterResult
+                {
+                    success = true,
+                    message = "회원가입이 완료되었습니다.",
+                    userId = userId
+                };
+            }
+            catch (Exception)
+            {
+                // 중간에 하나라도 실패 → 롤백
+                tx.Rollback();
+
+                throw;
+            }
         }
 
         public async Task<LoginResult> LoginAsync(string username, string password)

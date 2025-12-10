@@ -1,4 +1,6 @@
-﻿using WebServerProject.CSR.Repositories.Character;
+﻿using SqlKata.Execution;
+using System.Data;
+using WebServerProject.CSR.Repositories.Character;
 using WebServerProject.CSR.Repositories.Deck;
 using WebServerProject.Models.DTOs.Character;
 using WebServerProject.Models.DTOs.Deck;
@@ -11,6 +13,7 @@ namespace WebServerProject.CSR.Services.Deck
         public Task<DeckDTO> GetDeckAsync(int userId, int deckIndex);
         public Task<List<DeckDTO>> GetDeckListAsync(int userId);
         public Task<DeckDTO> UpdateDeckAsync(int userId, int deckId, List<int> characterId);
+        public Task CreateDefaultDecksAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
     }
 
     public class DeckService : IDeckService
@@ -198,6 +201,31 @@ namespace WebServerProject.CSR.Services.Deck
             }
 
             return result;
+        }
+
+        public async Task CreateDefaultDecksAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            const int DEFAULT_DECK_COUNT = 3;
+            const int DEFAULT_SLOT_COUNT = 3;
+
+            for (int i=0;i< DEFAULT_DECK_COUNT; i++)
+            {
+                int deckId = await _deckRepository.CreateDeckAsync(new Models.Entities.DeckEntity.Deck
+                {
+                    user_id = userId,
+                    deck_index = i+1,
+                }, db, tx);
+
+                for (byte slot = 0; slot < DEFAULT_SLOT_COUNT; slot++)
+                {
+                    await _deckRepository.CreateDeckSlotAsync(new DeckSlot
+                    {
+                        deck_id = deckId,
+                        user_character_id = null,
+                        slot_order = (byte)(slot + 1),
+                    }, db, tx);
+                }
+            }
         }
     }
 }

@@ -1,13 +1,13 @@
-﻿@ReqeustTest_HostAdress = http://localhost:5000/api/auth
+﻿@ReqeustTest_HostAdress = http://localhost:80/api/auth
 
 ### 회원가입
 POST {{ReqeustTest_HostAdress}}/register
 Content-Type: application/json
 
 {
-  "username": "testuser2",
-  "email": "test2@example.com",
-  "password": "password123"
+  "username": "test1",
+  "email": "test1@example.com",
+  "password": "test1123"
 }
 
 ### 로그인

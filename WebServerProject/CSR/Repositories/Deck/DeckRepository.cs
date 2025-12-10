@@ -1,5 +1,5 @@
 ﻿using SqlKata.Execution;
-
+using System.Data;
 using DeckEntity =  WebServerProject.Models.Entities.DeckEntity.Deck;
 using DeckSlotEntity = WebServerProject.Models.Entities.DeckEntity.DeckSlot;
 
@@ -13,6 +13,9 @@ namespace WebServerProject.CSR.Repositories.Deck
 
         public Task DeleteDeckSlotsAsync(int deckId);
         public Task InsertDeckSlotAsync(DeckSlotEntity slot);
+
+        public Task<int> CreateDeckAsync(DeckEntity deck, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task CreateDeckSlotAsync(DeckSlotEntity deckSlot, QueryFactory? db = null, IDbTransaction? tx = null);
     }
 
     public class DeckRepository : IDeckRepository
@@ -69,6 +72,35 @@ namespace WebServerProject.CSR.Repositories.Deck
                          slot.user_character_id,
                          slot.slot_order
                      });
+        }
+
+        public async Task<int> CreateDeckAsync(DeckEntity deck, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            int deckId = await q.Query("decks")
+                .InsertGetIdAsync<int>(new
+                {
+                    deck.user_id,
+                    deck.deck_index,
+                    deck.name,
+                    deck.is_active
+                }, tx);
+
+            return deckId;
+        }
+
+        public async Task CreateDeckSlotAsync(DeckSlotEntity deckSlot, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            await q.Query("deck_slots")
+                .InsertAsync(new
+                {
+                    deckSlot.deck_id,
+                    deckSlot.user_character_id,
+                    deckSlot.slot_order
+                }, tx);
         }
     }
 }

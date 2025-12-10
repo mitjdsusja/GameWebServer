@@ -2,6 +2,12 @@
 {
     public class User
     {
+        public enum UserStatus
+        {
+            Inactive = 0,
+            Active = 1,
+            Banned = 2
+        }
         public int id { get; set; }
         public string username { get; set; } = null!;
         public string email { get; set; } = null!;

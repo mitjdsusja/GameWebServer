@@ -3,6 +3,7 @@ using UserEntity = WebServerProject.Models.Entities.UserEntity.User;
 using UserStateEntity = WebServerProject.Models.Entities.UserEntity.UserStats;
 using UserProfileEntity = WebServerProject.Models.Entities.UserEntity.UserProfiles;
 using UserResourcesEntity = WebServerProject.Models.Entities.UserEntity.UserResources;
+using System.Data;
 
 namespace WebServerProject.CSR.Repositories.User
 {
@@ -14,7 +15,10 @@ namespace WebServerProject.CSR.Repositories.User
         Task<UserStateEntity?> GetUserStatsByIdAsync(int userId);
         Task<UserProfileEntity?> GetUserProfilesByIdAsync(int userId);
         Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId);
-        Task<int> CreateAsync(UserEntity user);
+        Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task CreateUserStatsAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task CreateUserProfilesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task CreateUserResourcesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<bool> UpdateAsync(UserEntity user);
         Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime);
         Task<bool> UpdateResourcesAsync(int userId, UserResourcesEntity resources);
@@ -70,17 +74,49 @@ namespace WebServerProject.CSR.Repositories.User
                             .FirstOrDefaultAsync<UserResourcesEntity>();
         }
 
-        public async Task<int> CreateAsync(UserEntity user)
+        public async Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            var id = await _db.Query("users").InsertGetIdAsync<int>(new
+            var q = db ?? _db;
+
+            var id = await q.Query("users").InsertGetIdAsync<int>(new
             {
                 user.username,
                 user.email,
-                password = user.password_hash,
+                user.password_hash,
+                user.salt,
                 created_at = DateTime.UtcNow,
                 user.last_login_at
-            });
+            }, tx);
             return id;
+        }
+
+        public async Task CreateUserStatsAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            await q.Query("user_stats").InsertAsync(new
+            {
+                user_id = userId
+            }, tx);
+        }
+        public async Task CreateUserProfilesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            await q.Query("user_profiles").InsertAsync(new
+            {
+                user_id = userId
+            }, tx);
+        }
+
+        public async Task CreateUserResourcesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            await q.Query("user_resources").InsertAsync(new
+            {
+                user_id = userId,
+            }, tx);
         }
 
         public async Task<bool> UpdateAsync(UserEntity user)
