@@ -37,8 +37,6 @@ namespace WebServerProject.CSR.Services.Auth
             _deckService = deckService;
         }
 
-        // TODO :
-        // 인증 트랜잭션 처리
         public async Task<RegisterResult> RegisterAsync(string username, string email, string password)
         {
             var existingUserByUsername = await _userRepository.GetUserByUsernameAsync(username);
