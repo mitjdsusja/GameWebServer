@@ -163,7 +163,7 @@ CREATE TABLE decks (
 CREATE TABLE deck_slots (
   id INT AUTO_INCREMENT PRIMARY KEY,
   deck_id INT NOT NULL,
-  user_character_id INT NOT NULL,
+  user_character_id INT,
   slot_order TINYINT NOT NULL,
 
   CONSTRAINT fk_deck_slots_deck
