@@ -17,7 +17,7 @@ namespace WebServerProject.CSR.Repositories.User
         Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId);
         Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserStatsAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
-        Task CreateUserProfilesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task CreateUserProfilesAsync(int userId, string nickname, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserResourcesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<bool> UpdateAsync(UserEntity user);
         Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime);
@@ -99,13 +99,14 @@ namespace WebServerProject.CSR.Repositories.User
                 user_id = userId
             }, tx);
         }
-        public async Task CreateUserProfilesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task CreateUserProfilesAsync(int userId, string nickname, QueryFactory? db = null, IDbTransaction? tx = null)
         {
             var q = db ?? _db;
 
             await q.Query("user_profiles").InsertAsync(new
             {
-                user_id = userId
+                user_id = userId,
+                nickname = nickname
             }, tx);
         }
 

@@ -42,7 +42,7 @@ CREATE TABLE user_stats (
 -- =========================
 CREATE TABLE user_profiles (
   user_id INT PRIMARY KEY,
-  nickname VARCHAR(50),
+  nickname VARCHAR(50) NOT NULL,
   introduction TEXT,
 
   CONSTRAINT fk_user_profile_user

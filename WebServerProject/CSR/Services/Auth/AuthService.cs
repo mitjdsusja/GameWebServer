@@ -92,7 +92,7 @@ namespace WebServerProject.CSR.Services.Auth
                 int userId = await _userRepository.CreateUserAsync(newUser, _db, tx);
 
                 // 프로필, 스탯, 자원
-                await _userRepository.CreateUserProfilesAsync(userId, _db, tx);
+                await _userRepository.CreateUserProfilesAsync(userId, username, _db, tx);
                 await _userRepository.CreateUserStatsAsync(userId, _db, tx);
                 await _userRepository.CreateUserResourcesAsync(userId, _db, tx);
 
