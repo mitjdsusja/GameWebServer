@@ -2,6 +2,7 @@
 using SqlKata.Compilers;
 using SqlKata.Execution;
 using System.Reflection;
+using WebServerProject.CSR.Contollers.Dev;
 using WebServerProject.CSR.Repositories.Character;
 using WebServerProject.CSR.Repositories.Deck;
 using WebServerProject.CSR.Repositories.Enemy;
@@ -57,6 +58,8 @@ var dbUser = Environment.GetEnvironmentVariable("DB_USER");
 var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
 
 var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser};password={dbPass}";
+
+builder.Configuration["ConnectionStrings:GameDb"] = connectionString;
 
 // SQLKata / QueryFactory DI 등록 (요청당 1개: Scoped)
 builder.Services.AddScoped<QueryFactory>(sp =>

@@ -1,0 +1,9 @@
+﻿@ReqeustTest_HostAdress = http://localhost:80/api/dev
+
+### 테스트 유저 생성
+POST {{ReqeustTest_HostAdress}}/create-dummy-user
+Content-Type: application/json
+
+{
+  "createCount" : "10"
+}

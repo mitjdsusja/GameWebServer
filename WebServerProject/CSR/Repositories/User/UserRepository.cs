@@ -10,8 +10,8 @@ namespace WebServerProject.CSR.Repositories.User
     public interface IUserRepository
     {
         Task<UserEntity?> GetUserByIdAsync(int userId);
-        Task<UserEntity?> GetUserByUsernameAsync(string username);
-        Task<UserEntity?> GetUserByEmailAsync(string email);
+        Task<UserEntity?> GetUserByUsernameAsync(string username, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task<UserEntity?> GetUserByEmailAsync(string email, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<UserStateEntity?> GetUserStatsByIdAsync(int userId);
         Task<UserProfileEntity?> GetUserProfilesByIdAsync(int userId);
         Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId);
@@ -39,18 +39,22 @@ namespace WebServerProject.CSR.Repositories.User
                             .FirstOrDefaultAsync<UserEntity>();
         }
 
-        public async Task<UserEntity?> GetUserByUsernameAsync(string username)
+        public async Task<UserEntity?> GetUserByUsernameAsync(string username, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            return await _db.Query("users")
+            var q = db ?? _db;
+
+            return await q.Query("users")
                             .Where("username", username)
-                            .FirstOrDefaultAsync<UserEntity>();
+                            .FirstOrDefaultAsync<UserEntity>(tx);
         }
 
-        public async Task<UserEntity?> GetUserByEmailAsync(string email)
+        public async Task<UserEntity?> GetUserByEmailAsync(string email, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            return await _db.Query("users")
+            var q = db ?? _db;
+
+            return await q.Query("users")
                             .Where("email", email)
-                            .FirstOrDefaultAsync<UserEntity>();
+                            .FirstOrDefaultAsync<UserEntity>(tx);
         }
 
         public async Task<UserStateEntity?> GetUserStatsByIdAsync(int userId)

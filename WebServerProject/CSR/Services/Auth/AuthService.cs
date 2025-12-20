@@ -1,4 +1,6 @@
-﻿using SqlKata.Execution;
+﻿using MySqlConnector;
+using SqlKata.Compilers;
+using SqlKata.Execution;
 using WebServerProject.CSR.Repositories.User;
 using WebServerProject.CSR.Services.Deck;
 using WebServerProject.Models.Entities.UserEntity;
@@ -18,102 +20,86 @@ namespace WebServerProject.CSR.Services.Auth
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IAuthTokenService _tokenService;
-        private readonly QueryFactory _db;
 
         private readonly IDeckService _deckService;
+
+        private readonly string _connectionString;
 
         public AuthService(
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
             IAuthTokenService tokenService,
-            QueryFactory db,
-            IDeckService deckService)
+            IDeckService deckService,
+            IConfiguration config
+            )
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
-            _db = db;
 
             _deckService = deckService;
+
+            _connectionString = config.GetConnectionString("GameDb")
+            ?? throw new InvalidOperationException("ConnectionStrings:GameDb is missing.");
         }
 
         public async Task<RegisterResult> RegisterAsync(string username, string email, string password)
         {
-            var existingUserByUsername = await _userRepository.GetUserByUsernameAsync(username);
-            if (existingUserByUsername != null)
-            {
-                return new RegisterResult
-                {
-                    success = false,
-                    message = "이미 사용 중인 사용자 이름입니다."
-                };
-            }
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
 
-            var existingUserByEmail = await _userRepository.GetUserByEmailAsync(email);
-            if (existingUserByEmail != null)
-            {
-                return new RegisterResult
-                {
-                    success = false,
-                    message = "이미 사용 중인 이메일 주소입니다."
-                };
-            }
+            var db = new QueryFactory(conn, new MySqlCompiler());
 
-            if (string.IsNullOrEmpty(password) || password.Length < 8)
-            {
-                return new RegisterResult
-                {
-                    success = false,
-                    message = "비밀번호는 최소 8자 이상이어야 합니다."
-                };
-            }
-
-            // 비밀번호 해싱
-            var (passwordHash, salt) = _passwordHasher.HashPassword(password);
-
-            // 새 사용자 생성
-            var newUser = new User
-            {
-                username = username,
-                email = email,
-                password_hash = passwordHash,
-                salt = salt,
-                status = (int)User.UserStatus.Active,
-            };
-
-            // 테이블 데이터 생성 트랜잭션 처리
-            var conn = _db.Connection;
-            conn.Open();
-            using var tx = conn.BeginTransaction();
+            await using var tx = await conn.BeginTransactionAsync();
 
             try
             {
-                // users
-                int userId = await _userRepository.CreateUserAsync(newUser, _db, tx);
-
-                // 프로필, 스탯, 자원
-                await _userRepository.CreateUserProfilesAsync(userId, username, _db, tx);
-                await _userRepository.CreateUserStatsAsync(userId, _db, tx);
-                await _userRepository.CreateUserResourcesAsync(userId, _db, tx);
-
-                // 덱
-                await _deckService.CreateDefaultDecksAsync(userId, _db, tx);
-
-                // 전부 성공 → 커밋
-                tx.Commit();
-
-                return new RegisterResult
+                var existingUserByUsername = await _userRepository.GetUserByUsernameAsync(username, db, tx);
+                if (existingUserByUsername != null)
                 {
-                    success = true,
-                    message = "회원가입이 완료되었습니다.",
-                    userId = userId
-                };
-            }
-            catch (Exception)
-            {
-                // 중간에 하나라도 실패 → 롤백
-                tx.Rollback();
+                    await tx.RollbackAsync();
+                    return new RegisterResult { success = false, message = "이미 사용 중인 사용자 이름입니다." };
+                }
 
+                var existingUserByEmail = await _userRepository.GetUserByEmailAsync(email, db, tx);
+                if (existingUserByEmail != null)
+                {
+                    await tx.RollbackAsync();
+                    return new RegisterResult { success = false, message = "이미 사용 중인 이메일 주소입니다." };
+                }
+
+                if (string.IsNullOrEmpty(password) || password.Length < 8)
+                {
+                    await tx.RollbackAsync();
+                    return new RegisterResult { success = false, message = "비밀번호는 최소 8자 이상이어야 합니다." };
+                }
+
+                var (passwordHash, salt) = _passwordHasher.HashPassword(password);
+
+                var newUser = new User
+                {
+                    username = username,
+                    email = email,
+                    password_hash = passwordHash,
+                    salt = salt,
+                    status = (int)User.UserStatus.Active,
+                };
+
+                int userId = await _userRepository.CreateUserAsync(newUser, db, tx);
+
+                await _userRepository.CreateUserProfilesAsync(userId, username, db, tx);
+                await _userRepository.CreateUserStatsAsync(userId, db, tx);
+                await _userRepository.CreateUserResourcesAsync(userId, db, tx);
+
+                await _deckService.CreateDefaultDecksAsync(userId, db, tx);
+
+                await tx.CommitAsync();
+
+                return new RegisterResult { success = true, message = "회원가입이 완료되었습니다.", userId = userId };
+            }
+            catch
+            {
+                await tx.RollbackAsync();
                 throw;
             }
         }
