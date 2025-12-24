@@ -55,8 +55,8 @@ CREATE TABLE user_profiles (
 -- =========================
 CREATE TABLE user_resources (
   user_id INT PRIMARY KEY,
-  gold INT NOT NULL DEFAULT 0,
-  diamond INT NOT NULL DEFAULT 0,
+  gold INT NOT NULL DEFAULT 1000,
+  diamond INT NOT NULL DEFAULT 1000,
 
   CONSTRAINT fk_user_resources_user
     FOREIGN KEY (user_id) REFERENCES users(id)

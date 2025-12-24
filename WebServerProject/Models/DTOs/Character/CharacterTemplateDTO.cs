@@ -4,6 +4,7 @@ namespace WebServerProject.Models.DTOs.Character
 {
     public class CharacterTemplateDTO
     {
+        public int id { get; set; }
         public string name { get; set; }
         public string? description { get; set; }
         public int rarity { get; set; }
@@ -15,6 +16,7 @@ namespace WebServerProject.Models.DTOs.Character
         {
             var model = new CharacterTemplateDTO
             {
+                id = characterTemplate.id,
                 name = characterTemplate.name,
                 description = characterTemplate.description,
                 rarity = characterTemplate.rarity,

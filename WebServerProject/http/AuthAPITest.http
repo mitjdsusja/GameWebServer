@@ -5,9 +5,9 @@ POST {{ReqeustTest_HostAdress}}/register
 Content-Type: application/json
 
 {
-  "username": "test1",
-  "email": "test1@example.com",
-  "password": "test1123"
+  "username": "user1",
+  "email": "user1@example.com",
+  "password": "user1234"
 }
 
 ### 로그인

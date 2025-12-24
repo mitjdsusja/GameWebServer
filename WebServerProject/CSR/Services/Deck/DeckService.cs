@@ -90,7 +90,7 @@ namespace WebServerProject.CSR.Services.Deck
             return deckDTOs;
         }
 
-        public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckIndex, List<int> characterIds)
+        public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckIndex, List<int> userCharacterIdList)
         {
             // 덱 검증
             var deck = await _deckRepository.GetDeckAsync(userId, deckIndex);
@@ -104,29 +104,29 @@ namespace WebServerProject.CSR.Services.Deck
             }
 
             // 슬롯 개수 검증
-            if (characterIds == null || characterIds.Count == 0)
+            if (userCharacterIdList == null || userCharacterIdList.Count == 0)
             {
                 throw new InvalidOperationException("업데이트할 덱 슬롯 정보가 없습니다.");
             }
-            if (characterIds.Count > 5)
+            if (userCharacterIdList.Count > 5)
             {
                 throw new InvalidOperationException("덱 슬롯 개수는 최대 5개입니다.");
             }
 
             // 캐릭터 소유권 검증
-            foreach (var cid in characterIds)
+            foreach (var userCharacterId in userCharacterIdList)
             {
-                if (cid <= 0)
+                if (userCharacterId <= 0)
                     continue;
 
-                var userCharacter = await _characterRepository.GetUserCharacterAsync(cid);
+                var userCharacter = await _characterRepository.GetUserCharacterAsync(userId, userCharacterId);
                 if (userCharacter == null)
                 {
-                    throw new InvalidOperationException($"해당 유저는 캐릭터 {cid}를 소유하고 있지 않습니다.");
+                    throw new InvalidOperationException($"해당 유저는 캐릭터 {userCharacterId}를 소유하고 있지 않습니다.");
                 }
                 else if (userCharacter.user_id != userId)
                 {
-                    throw new InvalidOperationException($"캐릭터 {cid}는 해당 유저의 것이 아닙니다.");
+                    throw new InvalidOperationException($"캐릭터 {userCharacterId}는 해당 유저의 것이 아닙니다.");
                 }
             }
 
@@ -140,10 +140,10 @@ namespace WebServerProject.CSR.Services.Deck
                 await _deckRepository.DeleteDeckSlotsAsync(deck.Id, _db, tx);
 
                 // 새로운 슬롯 삽입
-                for (int i = 0; i < characterIds.Count; i++)
+                for (int i = 0; i < userCharacterIdList.Count; i++)
                 {
                     int slotOrder = i + 1;
-                    int? userCharacterId = characterIds[i] > 0 ? characterIds[i] : null;
+                    int? userCharacterId = userCharacterIdList[i] > 0 ? userCharacterIdList[i] : null;
 
                     var newSlot = new DeckSlot
                     {

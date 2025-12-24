@@ -5,7 +5,7 @@ POST {{ReqeustTest_HostAdress}}/stage/start
 Content-Type: application/json
 
 {
-  "userId": "2",
+  "userId": "20",
   "stageId": "1",
   "deckIndex" : "1"
 }

@@ -1,4 +1,7 @@
-﻿using WebServerProject.CSR.Services.Deck;
+﻿using MySqlConnector;
+using SqlKata.Compilers;
+using SqlKata.Execution;
+using WebServerProject.CSR.Services.Deck;
 using WebServerProject.CSR.Services.Stage;
 using WebServerProject.Models.DTOs.Battle;
 
@@ -11,16 +14,20 @@ namespace WebServerProject.CSR.Services
 
     public class BattleService : IBattleService
     {
+        private readonly string _connectionString;
         private readonly IUserService _userService;
         private readonly IStageService _stageService;
         private readonly IDeckService _deckService;
 
         public BattleService(
+            IConfiguration config,
             IUserService userService,
             IStageService stageService,
             IDeckService deckService
             )
         {
+            _connectionString = config.GetConnectionString("GameDb")
+            ?? throw new InvalidOperationException("ConnectionStrings:GameDb is missing.");
             _userService = userService;
             _stageService = stageService;
             _deckService = deckService;
@@ -55,8 +62,10 @@ namespace WebServerProject.CSR.Services
                 totalEnemyAttackPower += enemy.enemyTemplate.attack;
             }
 
-            // 전투 결과 반환
-            if (totalAttackPower <= totalEnemyAttackPower)
+            bool isWin = totalAttackPower >= totalEnemyAttackPower;
+
+            // 패배면 DB 작업 없이 바로 반환
+            if (!isWin)
             {
                 return new StartStageBattleResult
                 {
@@ -66,16 +75,36 @@ namespace WebServerProject.CSR.Services
                     rewardExp = 0
                 };
             }
-            else
+
+            // 결과 저장(보상 지급)
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            var db = new QueryFactory(conn, new MySqlCompiler());
+            await using var tx = await conn.BeginTransactionAsync();
+
+            BattleRewardDTO battleReward = new BattleRewardDTO();
+            battleReward.gold = stageDTO.rewardGold;
+            battleReward.exp = stageDTO.rewardExp;
+
+            try
             {
+                await _userService.GrantBattleRewardAsync(battleReward, db, tx);
+
+                await tx.CommitAsync();
+
                 return new StartStageBattleResult
                 {
                     success = true,
                     message = "전투에서 승리하였습니다.",
-                    rewardGold = stageDTO.rewardGold,
-                    rewardExp = stageDTO.rewardExp
+                    rewardGold = battleReward.gold,
+                    rewardExp = battleReward.exp
                 };
             }
+            catch(Exception e)
+            {
+                await tx.RollbackAsync();
+                throw;
+            }   
         }
     }
 }

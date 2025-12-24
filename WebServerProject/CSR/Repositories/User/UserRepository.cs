@@ -21,7 +21,9 @@ namespace WebServerProject.CSR.Repositories.User
         Task CreateUserResourcesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<bool> UpdateAsync(UserEntity user);
         Task<bool> UpdateLastLoginAsync(int userId, DateTime loginTime);
-        Task<bool> UpdateResourcesAsync(int userId, UserResourcesEntity resources);
+        Task<bool> UpdateResourcesAsync(int userId, UserResourcesEntity resources, QueryFactory? db = null, IDbTransaction? tx = null);
+            
+        Task<bool> UpdateStatsAsync(int userId, UserStateEntity stats, QueryFactory? db = null, IDbTransaction? tx = null);
     }
     public class UserRepository : IUserRepository
     {
@@ -148,15 +150,32 @@ namespace WebServerProject.CSR.Repositories.User
             return affected > 0;
         }
 
-        public async Task<bool> UpdateResourcesAsync(int userId, UserResourcesEntity resources)
+        public async Task<bool> UpdateResourcesAsync(int userId, UserResourcesEntity resources, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            var result = await _db.Query("user_resources")
+            var q = db ?? _db;
+
+            var result = await q.Query("user_resources")
                                   .Where ("user_id", userId)
                                   .UpdateAsync(new
                                   {
                                       gold = resources.gold,
                                       diamond = resources.diamond,
-                                  });
+                                  }, tx);
+
+            return result == 1;
+        }
+
+        public async Task<bool> UpdateStatsAsync(int userId, UserStateEntity stats, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            var result = await q.Query("user_stats")
+                                  .Where("user_id", userId)
+                                  .UpdateAsync(new
+                                  {
+                                      level = stats.level,
+                                      exp = stats.exp,
+                                  }, tx);
 
             return result == 1;
         }

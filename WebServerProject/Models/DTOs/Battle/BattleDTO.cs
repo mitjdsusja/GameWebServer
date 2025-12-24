@@ -8,4 +8,11 @@
         public int rewardGold { get; set; }
         public int rewardExp { get; set; }
     }
+
+    public class BattleRewardDTO
+    {
+        public int userId { get; set; }
+        public int gold { get; set; }
+        public int exp { get; set; }
+    }
 }

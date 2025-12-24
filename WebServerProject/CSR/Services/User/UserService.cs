@@ -1,6 +1,10 @@
-﻿using WebServerProject.CSR.Repositories.User;
+﻿using SqlKata.Execution;
+using System.Data;
+using WebServerProject.CSR.Repositories.User;
+using WebServerProject.Models.DTOs.Battle;
 using WebServerProject.Models.DTOs.User;
 using WebServerProject.Models.DTOs.UserEntity;
+using WebServerProject.Models.Entities.UserEntity;
 
 namespace WebServerProject.CSR.Services
 {
@@ -8,6 +12,7 @@ namespace WebServerProject.CSR.Services
     {
         public Task<UserSafeDTO> GetUserAsync(int userId);
         public Task<UserSafeDTO> GetUserDetailAsync(int userId);
+        public Task GrantBattleRewardAsync(BattleRewardDTO reward, QueryFactory? db = null, IDbTransaction? tx = null);
     }
     public class UserService : IUserService
     {
@@ -60,6 +65,31 @@ namespace WebServerProject.CSR.Services
             userModel.resource = userResources;
 
             return userModel;
+        }
+
+        public async Task GrantBattleRewardAsync(BattleRewardDTO reward, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            // 보상 지급
+            var userResources = await _userRepository.GetUserResourcesByIdAsync(reward.userId);
+            if(userResources == null)
+            {
+                throw new InvalidOperationException("유저 자원 정보가 없습니다.");
+            }
+
+            userResources.gold += reward.gold;
+            await _userRepository.UpdateResourcesAsync(reward.userId, userResources, db, tx);
+
+            // 경험치 지급 및 레벨업 처리
+            var userStats = await _userRepository.GetUserStatsByIdAsync(reward.userId);
+            if(userStats == null)
+            {
+                throw new InvalidOperationException("유저 통계 정보가 없습니다.");
+            }
+
+            userStats.exp += reward.exp;
+            // TODO : 레벨업 처리
+            // 현재는 경험치만 누적
+            await _userRepository.UpdateStatsAsync(reward.userId, userStats, db, tx);
         }
     }
 }

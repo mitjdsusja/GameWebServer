@@ -22,11 +22,11 @@ namespace WebServerProject.CSR.Repositories.Character
         {
             _db = db;
         }
-        public async Task<UserCharacter> GetUserCharacterAsync(int userId, int characterTemplateId)
+        public async Task<UserCharacter> GetUserCharacterAsync(int userId, int userCharacterId)
         {
             var userCharacter = await _db.Query("user_characters")
+                                             .Where("id", userCharacterId)
                                              .Where("user_id", userId)
-                                             .Where("template_id", characterTemplateId)
                                              .FirstOrDefaultAsync<UserCharacter>();
 
             return userCharacter;
