@@ -19,9 +19,9 @@ namespace WebServerProject.CSR.Contollers
         [HttpPost("register")]
         public async Task<RegisterResponse> Register([FromBody] RegisterRequest request)
         {
-            if (string.IsNullOrEmpty(request.Username) ||
-                string.IsNullOrEmpty(request.Email) ||
-                string.IsNullOrEmpty(request.Password))
+            if (string.IsNullOrWhiteSpace(request.Username) ||
+                string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password))
             {
                 return new RegisterResponse
                 {
@@ -45,7 +45,7 @@ namespace WebServerProject.CSR.Contollers
                 return new RegisterResponse
                 {
                     success = false,
-                    message = $"유효하지 않은 작업입니다: {ex.Message}"
+                    message = "회원가입 중 오류가 발생했습니다."
                 };
             }
             catch (Exception ex)
@@ -53,7 +53,7 @@ namespace WebServerProject.CSR.Contollers
                 return new RegisterResponse
                 {
                     success = false,
-                    message = $"등록 중 오류가 발생했습니다: {ex.Message}"
+                    message = "회원가입 중 오류가 발생했습니다."
                 };
             }
         }
