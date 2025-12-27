@@ -68,7 +68,7 @@ namespace WebServerProject.CSR.Services.Auth
                     return new RegisterResult { success = false, message = "이미 사용 중인 이메일 주소입니다." };
                 }
 
-                if (string.IsNullOrEmpty(password) || password.Length < 8)
+                if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
                 {
                     await tx.RollbackAsync();
                     return new RegisterResult { success = false, message = "비밀번호는 최소 8자 이상이어야 합니다." };
