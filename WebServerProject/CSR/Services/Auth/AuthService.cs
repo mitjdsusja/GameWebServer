@@ -4,6 +4,7 @@ using SqlKata.Execution;
 using WebServerProject.CSR.Repositories.User;
 using WebServerProject.CSR.Services.Deck;
 using WebServerProject.Models.Entities.UserEntity;
+using WebServerProject.Models.Response;
 
 namespace WebServerProject.CSR.Services.Auth
 {
@@ -52,26 +53,42 @@ namespace WebServerProject.CSR.Services.Auth
 
             await using var tx = await conn.BeginTransactionAsync();
 
+            // 입력값 검증
+            if (string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password))
+            {
+                return new RegisterResult
+                {
+                    success = false,
+                    message = "사용자 이름, 이메일, 비밀번호는 필수 입력 항목입니다."
+                };
+            }
+            if (password.Length < 8)
+            {
+                return new RegisterResult { success = false, message = "비밀번호는 최소 8자 이상이어야 합니다." };
+            }
+
             try
             {
-                var existingUserByUsername = await _userRepository.GetUserByUsernameAsync(username, db, tx);
-                if (existingUserByUsername != null)
+                // UserName 및 Email 중복 확인
+                var usernameCheck = await _userRepository.GetUserByUsernameAsync(username, db, tx);
+                if(usernameCheck != null)
                 {
-                    await tx.RollbackAsync();
-                    return new RegisterResult { success = false, message = "이미 사용 중인 사용자 이름입니다." };
+                    return new RegisterResult
+                    {
+                        success = false,
+                        message = "이미 존재하는 사용자 이름입니다."
+                    };
                 }
-
-                var existingUserByEmail = await _userRepository.GetUserByEmailAsync(email, db, tx);
-                if (existingUserByEmail != null)
+                var userEmailCheck = await _userRepository.GetUserByEmailAsync(email, db, tx);
+                if(userEmailCheck != null)
                 {
-                    await tx.RollbackAsync();
-                    return new RegisterResult { success = false, message = "이미 사용 중인 이메일 주소입니다." };
-                }
-
-                if (string.IsNullOrWhiteSpace(password) || password.Length < 8)
-                {
-                    await tx.RollbackAsync();
-                    return new RegisterResult { success = false, message = "비밀번호는 최소 8자 이상이어야 합니다." };
+                    return new RegisterResult
+                    {
+                        success = false,
+                        message = "이미 존재하는 사용자 이메일입니다."
+                    };
                 }
 
                 var (passwordHash, salt) = _passwordHasher.HashPassword(password);
@@ -85,9 +102,9 @@ namespace WebServerProject.CSR.Services.Auth
                     status = (int)User.UserStatus.Active,
                 };
 
+                // UserData 기본 생성
                 int userId = await _userRepository.CreateUserAsync(newUser, db, tx);
-
-                await _userRepository.CreateUserProfilesAsync(userId, username, db, tx);
+                await _userRepository.CreateUserProfilesAsync(userId, newUser.username, db, tx);
                 await _userRepository.CreateUserStatsAsync(userId, db, tx);
                 await _userRepository.CreateUserResourcesAsync(userId, db, tx);
 

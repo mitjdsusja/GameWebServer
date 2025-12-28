@@ -10,26 +10,19 @@ namespace WebServerProject.CSR.Contollers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        
-        public AuthController(IAuthService authService)
+        private readonly ILogger<AuthController> _logger;
+
+        public AuthController(
+            IAuthService authService,
+            ILogger<AuthController> logger)
         {
             _authService = authService;
+            _logger = logger;
         }
 
         [HttpPost("register")]
         public async Task<RegisterResponse> Register([FromBody] RegisterRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Username) ||
-                string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Password))
-            {
-                return new RegisterResponse
-                {
-                    success = false,
-                    message = "사용자 이름, 이메일, 비밀번호는 필수 입력 항목입니다."
-                };
-            }
-
             try
             {
                 RegisterResult registerResult = await _authService.RegisterAsync(request.Username, request.Email, request.Password);
@@ -40,16 +33,10 @@ namespace WebServerProject.CSR.Contollers
                     userId = registerResult.userId
                 };
             }
-            catch(InvalidOperationException ex)
-            {
-                return new RegisterResponse
-                {
-                    success = false,
-                    message = "회원가입 중 오류가 발생했습니다."
-                };
-            }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "회원가입 중 오류가 발생했습니다. : " + ex);
+
                 return new RegisterResponse
                 {
                     success = false,
