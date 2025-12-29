@@ -123,27 +123,46 @@ namespace WebServerProject.CSR.Services.Auth
 
         public async Task<LoginResult> LoginAsync(string username, string password)
         {
+            if(string.IsNullOrWhiteSpace(username) ||
+                string.IsNullOrWhiteSpace(password))
+            {
+                return new LoginResult
+                {
+                    success = false,
+                    message = "사용자 이름과 비밀번호는 필수 입력 항목입니다."
+                };
+            }
+
             // 사용자 조회
             var user = await _userRepository.GetUserByUsernameAsync(username);
-
             if (user == null)
             {
-                throw new InvalidOperationException("사용자 이름 또는 비밀번호가 올바르지 않습니다.");
+                return new LoginResult
+                {
+                    success = false,
+                    message = "사용자 이름 또는 비밀번호가 올바르지 않습니다."
+                };
             }
 
             // 계정 상태 확인
             if (user.status != 1)
             {
-                throw new InvalidOperationException($"계정이 {user.status} 상태입니다. 관리자에게 문의하세요.");
-                    
+                return new LoginResult
+                {
+                    success = false,
+                    message = $"계정이 {user.status} 상태입니다. 관리자에게 문의하세요."
+                };
             }
 
             // 비밀번호 검증
             bool isPasswordValid = _passwordHasher.VerifyPassword(password, user.password_hash, user.salt);
-
             if (!isPasswordValid)
             {
-                throw new InvalidOperationException("사용자 이름 또는 비밀번호가 올바르지 않습니다.");
+                return new LoginResult
+                {
+                    success = false,
+                    message = "사용자 이름 또는 비밀번호가 올바르지 않습니다."
+                };
             }
 
             // 마지막 로그인 시간 업데이트
@@ -151,14 +170,17 @@ namespace WebServerProject.CSR.Services.Auth
 
             // 인증 토큰 생성
             var token = await _tokenService.CreateTokenAsync(user);
+            if (token == null)
+            {
+                return new LoginResult
+                {
+                    success = false,
+                    message = "인증 토큰 생성에 실패했습니다."
+                };
+            }
 
             // TODO : 인증 토큰 서버 저장
             // 
-
-            if (token == null)
-            {
-                throw new InvalidOperationException("인증 토큰 생성에 실패했습니다.");
-            }
 
             return new LoginResult
             {

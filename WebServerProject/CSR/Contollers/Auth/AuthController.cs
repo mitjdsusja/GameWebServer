@@ -48,16 +48,6 @@ namespace WebServerProject.CSR.Contollers
         [HttpPost("login")]
         public async Task<LoginResponse> Login([FromBody] LoginRequest request)
         {
-            if (string.IsNullOrEmpty(request.Username) ||
-                string.IsNullOrEmpty(request.Password))
-            {
-                return new LoginResponse
-                {
-                    success = false,
-                    message = "사용자 이름, 비밀번호, 기기 ID는 필수 입력 항목입니다."
-                };
-            }
-
             try
             {
                 LoginResult loginResult = await _authService.LoginAsync(request.Username, request.Password);
