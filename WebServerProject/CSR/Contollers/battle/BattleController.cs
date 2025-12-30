@@ -36,18 +36,9 @@ namespace WebServerProject.CSR.Contollers
                     // TODO : 결과
                 };
             }
-            catch(InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "배틀 요청 중 예외 발생: {Message}", ex.Message);
-                return new StartStageBattleResponse
-                {
-                    success = false,
-                    message = ex.Message
-                };
-            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "배틍 요청 중 서버 예외 발생");
+                _logger.LogError(ex, "배틀 요청 중 서버 예외 발생");
                 return new StartStageBattleResponse
                 {
                     success = false,

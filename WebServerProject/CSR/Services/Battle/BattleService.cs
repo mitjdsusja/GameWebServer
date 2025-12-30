@@ -83,6 +83,7 @@ namespace WebServerProject.CSR.Services
             await using var tx = await conn.BeginTransactionAsync();
 
             BattleRewardDTO battleReward = new BattleRewardDTO();
+            battleReward.userId = userId;   
             battleReward.gold = stageDTO.rewardGold;
             battleReward.exp = stageDTO.rewardExp;
 
@@ -100,9 +101,9 @@ namespace WebServerProject.CSR.Services
                     rewardExp = battleReward.exp
                 };
             }
-            catch(Exception e)
+            catch
             {
-                await tx.RollbackAsync();
+                try { await tx.RollbackAsync(); } catch { }
                 throw;
             }   
         }
