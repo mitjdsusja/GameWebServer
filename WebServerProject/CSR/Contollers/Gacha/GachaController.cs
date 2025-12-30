@@ -74,21 +74,13 @@ namespace WebServerProject.CSR.Contollers
                     remainingResources = result.RemainingResources
                 };
             }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "가챠 처리 중 예외 발생: {Message}", ex.Message);
-                return new GachaDrawResponse{
-                    success = false,
-                    message = ex.Message
-                };
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "가챠 뽑기 중 예외 발생: {Message}", ex.Message);
                 return new GachaDrawResponse
                 {
                     success = false,
-                    message = "가챠 뽑기 중 오류가 발생했습니다. " + ex.Message
+                    message = "가챠 뽑기 중 오류가 발생했습니다. "
                 };
             }
         }

@@ -9,12 +9,12 @@ namespace WebServerProject.CSR.Repositories.User
 {
     public interface IUserRepository
     {
-        Task<UserEntity?> GetUserByIdAsync(int userId);
+        Task<UserEntity?> GetUserByIdAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<UserEntity?> GetUserByUsernameAsync(string username, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<UserEntity?> GetUserByEmailAsync(string email, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<UserStateEntity?> GetUserStatsByIdAsync(int userId);
         Task<UserProfileEntity?> GetUserProfilesByIdAsync(int userId);
-        Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId);
+        Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserStatsAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserProfilesAsync(int userId, string nickname, QueryFactory? db = null, IDbTransaction? tx = null);
@@ -34,11 +34,13 @@ namespace WebServerProject.CSR.Repositories.User
             _db = db;
         }
 
-        public async Task<UserEntity?> GetUserByIdAsync(int userId)
+        public async Task<UserEntity?> GetUserByIdAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            return await _db.Query("users")
+            var q = db ?? _db;
+
+            return await q.Query("users")
                             .Where("id", userId)
-                            .FirstOrDefaultAsync<UserEntity>();
+                            .FirstOrDefaultAsync<UserEntity>(tx);
         }
 
         public async Task<UserEntity?> GetUserByUsernameAsync(string username, QueryFactory? db = null, IDbTransaction? tx = null)
@@ -73,11 +75,13 @@ namespace WebServerProject.CSR.Repositories.User
                             .FirstOrDefaultAsync<UserProfileEntity>();
         }
 
-        public async Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId)
+        public async Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            return await _db.Query("user_resources")
+            var q = db ?? _db;
+
+            return await q.Query("user_resources")
                             .Where("user_id", userId)
-                            .FirstOrDefaultAsync<UserResourcesEntity>();
+                            .FirstOrDefaultAsync<UserResourcesEntity>(tx);
         }
 
         public async Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null)

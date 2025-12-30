@@ -1,4 +1,8 @@
-﻿using WebServerProject.CSR.Repositories.Character;
+﻿using MySqlConnector;
+using SqlKata.Compilers;
+using SqlKata.Execution;
+using System.Data;
+using WebServerProject.CSR.Repositories.Character;
 using WebServerProject.CSR.Repositories.Gacha;
 using WebServerProject.CSR.Repositories.User;
 using WebServerProject.CSR.Services.Gacha;
@@ -24,16 +28,22 @@ namespace WebServerProject.CSR.Services
         public readonly IGachaRepository _gachaRepository;
         public readonly IGachaRandomizer _gachaRandomizer;
 
+        private readonly string _connectionString;
+
         public GachaService(
             IUserRepository userRepository,
             ICharacterRepository characterRepository,
             IGachaRepository gachaRepository,
-            IGachaRandomizer gachaRandomizer)
+            IGachaRandomizer gachaRandomizer,
+            IConfiguration config)
         {
             _userRepository = userRepository;   
             _characterRepository = characterRepository;
             _gachaRepository = gachaRepository;
             _gachaRandomizer = gachaRandomizer;
+
+            _connectionString = config.GetConnectionString("GameDb")
+            ?? throw new InvalidOperationException("ConnectionStrings:GameDb is missing.");
         }
 
         public async Task<List<GachaMasterDTO>?> GetGachaListAsync()
@@ -60,77 +70,122 @@ namespace WebServerProject.CSR.Services
 
         public async Task<GachaDrawResultDTO> DrawAsync(string gachaId, int userId)
         {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            var db = new QueryFactory(conn, new MySqlCompiler());
+
             // userId 확인
-            var user = await _userRepository.GetUserByIdAsync(userId);
+            var user = await _userRepository.GetUserByIdAsync(userId, db);
             if (user == null)
             {
-                throw new InvalidOperationException("사용자를 찾을 수 없습니다.");
-            }
-
-            // 재화 확인
-            var resource = await _userRepository.GetUserResourcesByIdAsync(userId);
-            if (resource == null)
-            {
-                throw new InvalidOperationException("유저 재화 정보를 찾을 수 없습니다.");
-            }
-            else if(resource.diamond < 100)
-            {
                 return new GachaDrawResultDTO
                 {
                     Success = false,
-                    Message = "다이아몬드가 부족합니다. 남은 다이아 : " + resource.diamond,
-                    RemainingResources = UserResourcesDTO.FromUserResources(resource)
+                    Message = "유효하지 않은 사용자입니다."
                 };
             }
 
-            // 뽑기 로직
-            var selectedItem = await _gachaRandomizer.SelectItemAsync(gachaId);
-            if (selectedItem == null)
-            {
-                throw new InvalidOperationException("가챠 아이템 선택에 실패했습니다.");
-            }
+            await using var tx = await conn.BeginTransactionAsync();
+            bool committed = false;
 
-            // 결과 저장 (트랜잭션 처리 필요) 
-            // 재화 소모
-            var updateResourcesResult = await _userRepository.UpdateResourcesAsync(user.id, new UserResources { gold = resource.gold, diamond = resource.diamond - 100 });
-            if(updateResourcesResult == false)
+            try
             {
-                throw new InvalidOperationException($"{user.id}의 Resources 업데이트 실패");
-            }
-
-            // 보상 지급
-            var result = await GrantGachaRewardAsync(userId, selectedItem);
-            if(result == null)
-            {
-                throw new InvalidOperationException("가챠 보상 지급에 실패했습니다.");
-            }
-            if (!result.Success)
-            {
-                return new GachaDrawResultDTO
+                // 재화 확인
+                var resource = await _userRepository.GetUserResourcesByIdAsync(userId, db, tx);
+                if (resource == null)
                 {
-                    Success = false,
-                    Message = result.Message
-                };
-            }
-
-            // 결과 반환
-            return new GachaDrawResultDTO
-            {
-                Success = true,
-                Message = result.Message,
-                isNew = result.IsNew,
-
-                DrawnItem = GachaPoolDTO.FromGachaPool(selectedItem),
-                RemainingResources = new UserResourcesDTO
-                {
-                    Gold = resource.gold,
-                    Diamond = resource.diamond - 100,
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "유저 재화 정보를 찾을 수 없습니다."
+                    };
                 }
-            };
+                else if (resource.diamond < 100)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "다이아몬드가 부족합니다. 남은 다이아 : " + resource.diamond,
+                        RemainingResources = UserResourcesDTO.FromUserResources(resource)
+                    };
+                }
+
+                // 뽑기 로직
+                var selectedItem = await _gachaRandomizer.SelectItemAsync(gachaId, db, tx);
+                if (selectedItem == null)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "가챠 아이템 선택에 실패했습니다."
+                    };
+                }
+
+                // 재화 소모
+                UserResources userResources = new UserResources
+                {
+                    gold = resource.gold,
+                    diamond = resource.diamond - 100
+                };
+                var updateResourcesResult = await _userRepository.UpdateResourcesAsync(user.id, userResources, db, tx);
+                if (updateResourcesResult == false)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "재화 업데이트에 실패했습니다."
+                    };
+                }
+
+                // 보상 지급
+                var result = await GrantGachaRewardAsync(userId, selectedItem, db, tx);
+                if (result == null)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "가챠 보상 지급에 실패했습니다."
+                    };
+                }
+                if (!result.Success)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = result.Message
+                    };
+                }
+
+                await tx.CommitAsync();
+                committed = true;
+
+                // 결과 반환
+                return new GachaDrawResultDTO
+                {
+                    Success = true,
+                    Message = result.Message,
+                    isNew = result.IsNew,
+
+                    DrawnItem = GachaPoolDTO.FromGachaPool(selectedItem),
+                    RemainingResources = new UserResourcesDTO
+                    {
+                        Gold = resource.gold,
+                        Diamond = resource.diamond - 100,
+                    }
+                };
+            }
+            finally
+            {
+                if(committed == false)
+                {
+                    try { await tx.RollbackAsync(); } catch { }
+                }
+            }
         }
 
         // 보상 지급 처리
-        private async Task<GachaRewardResultDTO> GrantGachaRewardAsync(int userId, GachaPool poolItem)
+        private async Task<GachaRewardResultDTO> GrantGachaRewardAsync(int userId, GachaPool poolItem, QueryFactory? db = null, IDbTransaction? tx = null)
         {
             var result = new GachaRewardResultDTO();
             result.Success = true;
@@ -141,7 +196,7 @@ namespace WebServerProject.CSR.Services
                 case (int)GachaPool.ItemType.ITEM_CHARACTER:
                     // 캐릭터 획득 처리
                     // 중복 확인
-                    UserCharacter userCharacter =  await _characterRepository.GetUserCharacterAsync(userId, poolItem.item_id);
+                    UserCharacter userCharacter =  await _characterRepository.GetUserCharacterAsync(userId, poolItem.item_id, db, tx);
                     
                     // 중복된 캐릭터 획득 
                     if(userCharacter != null)
@@ -158,7 +213,7 @@ namespace WebServerProject.CSR.Services
                         result.IsNew = false;
 
                         // 기존 보상 지급
-                        var addCharacerResult = await _characterRepository.AddCharacterToUserAsync(userId, poolItem.item_id);
+                        var addCharacerResult = await _characterRepository.AddCharacterToUserAsync(userId, poolItem.item_id, db, tx);
                         if (addCharacerResult == 0)
                         {
                             throw new Exception("뽑기 결과 저장 중 오류가 발생했습니다.");
