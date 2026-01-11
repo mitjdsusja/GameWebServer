@@ -4,6 +4,7 @@ using WebServerProject.CSR.Repositories.Character;
 using WebServerProject.CSR.Repositories.Deck;
 using WebServerProject.Models.DTOs.Character;
 using WebServerProject.Models.DTOs.Deck;
+using WebServerProject.Models.Entities.CharacterEntity;
 using WebServerProject.Models.Entities.DeckEntity;
 
 namespace WebServerProject.CSR.Services.Deck
@@ -58,36 +59,101 @@ namespace WebServerProject.CSR.Services.Deck
         }
 
         public async Task<List<DeckDTO>> GetDeckListAsync(int userId)
-        {
+        { 
             var decks = await _deckRepository.GetDeckListAsync(userId);
             if(decks == null || decks.Count == 0)
             {
-                throw new InvalidOperationException("덱이 존재하지 않습니다.");
+                return new List<DeckDTO>();
             }
 
-            List<DeckDTO> deckDTOs = new List<DeckDTO>();
+            var deckIds = decks.Select(d => d.Id).ToList();
+            var allSlots = await _deckRepository.GetDeckSlotsByDeckIdsAsync(deckIds);
+
+            var slotByDeckId = allSlots
+                                    .GroupBy(s => s.deck_id)
+                                    .ToDictionary(g => g.Key, g => g.OrderBy(s => s.slot_order).ToList());
+            var userCharacterIds = allSlots
+                                    .Where(s => s.user_character_id.HasValue)
+                                    .Select(s => s.user_character_id!.Value)
+                                    .Distinct()
+                                    .ToList();
+
+            Dictionary<int, UserCharacter> userCharacterMap = new Dictionary<int, UserCharacter>();
+            Dictionary<int, CharacterTemplate> characterTemplateMap = new Dictionary<int, CharacterTemplate>();
+
+            if (userCharacterIds.Count > 0)
+            {
+                // 유저 캐릭터 정보
+                var userCharacters = await _characterRepository.GetUserCharacterListAsync(userCharacterIds);
+                userCharacterMap = userCharacters.ToDictionary(uc => uc.id, uc => uc);
+
+                // 캐릭터 템플릿 정보
+                var templateIds = userCharacters.Select(uc => uc.template_id).Distinct().ToList();
+                var characterTemplates = await _characterRepository.GetCharacterTemplateListAsync(templateIds);
+                characterTemplateMap = characterTemplates.ToDictionary(ct => ct.id, ct => ct);
+            }
+
+            // DTO 조립
+            var resultDeckDTOs = new List<DeckDTO>(decks.Count);
 
             foreach (var deck in decks)
             {
-                // DTO 생성
-                DeckDTO deckDTO = DeckDTO.FromDeck(deck);
-                
-                // 슬롯 정보 가져오기
-                var deckSlots = await _deckRepository.GetDeckSlotsAsync(deck.Id);
-                if (deckSlots == null)
+                var deckDTO = DeckDTO.FromDeck(deck);
+                if(!slotByDeckId.TryGetValue(deck.Id, out var slots))
                 {
-                    throw new InvalidOperationException($"덱({deck.Id}) 슬롯 정보를 불러올 수 없습니다.");
+                    slots = new List<DeckSlot>();
+                }
+                var slotDTOs = new List<DeckSlotDTO>(slots.Count);
+
+                // 슬롯 정보
+                foreach (var slot in slots)
+                {
+                    var slotDTO = new DeckSlotDTO
+                    {
+                        slotIndex = slot.slot_order
+                    };
+
+                    // 캐릭터 없는 슬롯
+                    if (!slot.user_character_id.HasValue)
+                    {
+                        slotDTO.characterDetail = null;
+                        slotDTOs.Add(slotDTO);
+                        continue;
+                    }
+
+                    var ucId = slot.user_character_id.Value;
+
+                    // 캐릭터 있는 슬롯: 맵에서 안전하게 조회
+                    if (!userCharacterMap.TryGetValue(slot.user_character_id.Value, out var userChar))
+                    {
+                        Console.WriteLine($"[DEBUG] missing userChar: ucId={ucId}");
+                        slotDTO.characterDetail = null;
+                        slotDTOs.Add(slotDTO);
+                        continue;
+                    }
+
+                    if (!characterTemplateMap.TryGetValue(userChar.template_id, out var template))
+                    {
+                        Console.WriteLine($"[DEBUG] missing template: templateId={userChar.template_id}");
+                        slotDTO.characterDetail = null;
+                        slotDTOs.Add(slotDTO);
+                        continue;
+                    }
+
+                    slotDTO.characterDetail = new CharacterDetailDTO
+                    {
+                        userCharacter = UserCharacterDTO.FromUserCharacter(userChar),
+                        characterTemplate = CharacterTemplateDTO.FromCharacterTemplate(template),
+                    };
+
+                    slotDTOs.Add(slotDTO);
                 }
 
-                // 슬롯 DTO 빌드
-                List<DeckSlotDTO> deckSlotsDTO = await BuildDeckSlotDTOsAsync(deckSlots);
-                
-                deckDTO.deckSlots = deckSlotsDTO;
-
-                deckDTOs.Add(deckDTO);
+                deckDTO.deckSlots = slotDTOs;
+                resultDeckDTOs.Add(deckDTO);
             }
 
-            return deckDTOs;
+            return resultDeckDTOs;
         }
 
         public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckIndex, List<int> userCharacterIdList)

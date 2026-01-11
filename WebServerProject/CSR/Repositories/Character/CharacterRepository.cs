@@ -9,6 +9,7 @@ namespace WebServerProject.CSR.Repositories.Character
     {
         public Task<UserCharacter> GetUserCharacterAsync(int userId, int characterTemplateId, QueryFactory? db = null, IDbTransaction? tx = null);
         public Task<List<UserCharacter>> GetUserCharacterListAsync(int userId);
+        public Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userIds);
         public Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds);
         public Task<UserCharacter> GetUserCharacterAsync(int userCharacterId, QueryFactory? db = null, IDbTransaction? tx = null);
         public Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId);
@@ -40,6 +41,15 @@ namespace WebServerProject.CSR.Repositories.Character
             // 유저 캐릭터 목록 조회
             var characters = await _db.Query("user_characters")
                                       .Where("user_id", userId)
+                                      .GetAsync<UserCharacter>();
+
+            return characters.ToList();
+        }
+
+        public async Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userCharacerIds)
+        {
+            var characters = await _db.Query("user_characters")
+                                      .WhereIn("id", userCharacerIds)
                                       .GetAsync<UserCharacter>();
 
             return characters.ToList();

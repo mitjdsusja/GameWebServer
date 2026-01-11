@@ -1,5 +1,6 @@
 ﻿using SqlKata.Execution;
 using System.Data;
+using WebServerProject.Models.Entities.DeckEntity;
 using DeckEntity =  WebServerProject.Models.Entities.DeckEntity.Deck;
 using DeckSlotEntity = WebServerProject.Models.Entities.DeckEntity.DeckSlot;
 
@@ -10,6 +11,7 @@ namespace WebServerProject.CSR.Repositories.Deck
         public Task<DeckEntity> GetDeckAsync(int userId, int deckIndex);
         public Task<List<DeckEntity>> GetDeckListAsync(int userId);
         public Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId);
+        public Task<List<DeckSlotEntity>> GetDeckSlotsByDeckIdsAsync(List<int> deckIds);
 
         public Task DeleteDeckSlotsAsync(int deckId, QueryFactory? db = null, IDbTransaction? tx = null);
         public Task InsertDeckSlotAsync(DeckSlotEntity slot, QueryFactory? db = null, IDbTransaction? tx = null);
@@ -50,6 +52,16 @@ namespace WebServerProject.CSR.Repositories.Deck
         {
             var deckSlots = await _db.Query("deck_slots")
                                      .Where("deck_id", deckId)
+                                     .OrderBy("slot_order")
+                                     .GetAsync<DeckSlotEntity>();
+
+            return deckSlots.ToList();
+        }
+
+        public async Task<List<DeckSlotEntity>> GetDeckSlotsByDeckIdsAsync(List<int> deckIds)
+        {
+            var deckSlots =  await _db.Query("deck_slots")
+                                     .WhereIn("deck_id", deckIds)
                                      .OrderBy("slot_order")
                                      .GetAsync<DeckSlotEntity>();
 
@@ -106,5 +118,7 @@ namespace WebServerProject.CSR.Repositories.Deck
                     deckSlot.slot_order
                 }, tx);
         }
+
+        
     }
 }

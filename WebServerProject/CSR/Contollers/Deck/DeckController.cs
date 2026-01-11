@@ -37,15 +37,6 @@ namespace WebServerProject.CSR.Contollers
                     decks = decks
                 };
             }
-            catch(InvalidOperationException ex)
-            {
-                _logger.LogWarning(ex, "덱 목록 조회 중 예외 발생: {Message}", ex.Message);
-                return new DeckListResponse
-                {
-                    success = false,
-                    message = ex.Message
-                };
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "덱 목록 조회 중 서버 예외 발생");

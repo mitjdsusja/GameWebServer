@@ -70,7 +70,7 @@ namespace WebServerProject.CSR.Services
         public async Task GrantBattleRewardAsync(BattleRewardDTO reward, QueryFactory? db = null, IDbTransaction? tx = null)
         {
             // 보상 지급
-            var userResources = await _userRepository.GetUserResourcesByIdAsync(reward.userId);
+            var userResources = await _userRepository.GetUserResourcesByIdAsync(reward.userId, db, tx);
             if(userResources == null)
             {
                 throw new InvalidOperationException("유저 자원 정보가 없습니다.");
@@ -80,7 +80,7 @@ namespace WebServerProject.CSR.Services
             await _userRepository.UpdateResourcesAsync(reward.userId, userResources, db, tx);
 
             // 경험치 지급 및 레벨업 처리
-            var userStats = await _userRepository.GetUserStatsByIdAsync(reward.userId);
+            var userStats = await _userRepository.GetUserStatsByIdAsync(reward.userId , db, tx);
             if(userStats == null)
             {
                 throw new InvalidOperationException("유저 통계 정보가 없습니다.");
