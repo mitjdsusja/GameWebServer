@@ -50,11 +50,10 @@ namespace WebServerProject.CSR.Services
 
             foreach (var slot in deckDTO.deckSlots)
             {
-                if(slot.characterDetail == null)
+                if(slot.userCharacter != null && slot.characterTemplate != null)
                 {
-                    continue;
+                    totalAttackPower += slot.characterTemplate.baseAttack;
                 }
-                totalAttackPower += slot.characterDetail.characterTemplate.baseAttack;
             }
             int totalEnemyAttackPower = 0;
             foreach (var enemy in stageDTO.stageEnemies)
