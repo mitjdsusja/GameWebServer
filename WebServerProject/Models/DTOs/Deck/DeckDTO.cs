@@ -7,7 +7,7 @@ namespace WebServerProject.Models.DTOs.Deck
         public int deckIndex { get; set; }
         public string name { get; set; }
         public bool isActive { get; set; }
-        public List<DeckSlotDTO>? deckSlots { get; set; }
+        public List<DeckSlotDTO>? deckSlots { get; set; } = null;
         
         public static DeckDTO FromDeck(DeckEntity deck)
         {

@@ -41,8 +41,6 @@ namespace WebServerProject.CSR.Services.Deck
                 throw new InvalidOperationException("덱이 존재하지 않습니다.");
             }
 
-            DeckDTO deckDTO = DeckDTO.FromDeck(deck);
-
             // 슬롯 정보 가져오기
             var deckSlots = await _deckRepository.GetDeckSlotsAsync(deck.Id);
             if (deckSlots == null)
@@ -50,10 +48,25 @@ namespace WebServerProject.CSR.Services.Deck
                 throw new InvalidOperationException($"덱({deck.Id}) 슬롯 정보를 불러올 수 없습니다.");
             }
 
-            // 슬롯 DTO 빌드
-            List<DeckSlotDTO> deckSlotsDTO = await BuildDeckSlotDTOsAsync(deckSlots);
+            // 캐릭터 정보
+            List<int> userCharacterIds = deckSlots
+                                            .Where(s => s.user_character_id.HasValue)
+                                            .Select(s => s.user_character_id!.Value)
+                                            .Distinct()
+                                            .ToList();
+            var userChars = await _characterRepository.GetUserCharacterListAsync(userCharacterIds);
+            Dictionary<int, UserCharacter> userCharsByUserCharId = userChars.ToDictionary(uc => uc.id, uc => uc);
 
-            deckDTO.deckSlots = deckSlotsDTO;
+            // 캐릭터 템플릿 정보
+            List<int> templateIds = userChars
+                                    .Select(uc => uc.template_id)
+                                    .Distinct()
+                                    .ToList();
+            var templates = await _characterRepository.GetCharacterTemplateListAsync(templateIds);
+            Dictionary<int, CharacterTemplate> templatesByTemplateId = templates.ToDictionary(t => t.id, t => t);
+
+            // 슬롯 DTO 빌드
+            DeckDTO deckDTO = DeckDTOFactory.Create(deck, deckSlots, userCharsByUserCharId, templatesByTemplateId);
 
             return deckDTO;
         }
@@ -93,61 +106,15 @@ namespace WebServerProject.CSR.Services.Deck
                 characterTemplateMap = characterTemplates.ToDictionary(ct => ct.id, ct => ct);
             }
 
-            // DTO 조립
-            var resultDeckDTOs = new List<DeckDTO>(decks.Count);
-
+            // DeckDTO 생성
+            var result = new List<DeckDTO>();
             foreach (var deck in decks)
             {
-                var deckDTO = DeckDTO.FromDeck(deck);
-                if(!slotByDeckId.TryGetValue(deck.Id, out var slots))
-                {
-                    slots = new List<DeckSlot>();
-                }
-                var slotDTOs = new List<DeckSlotDTO>(slots.Count);
-
-                // 슬롯 정보
-                foreach (var slot in slots)
-                {
-                    var slotDTO = new DeckSlotDTO
-                    {
-                        slotIndex = slot.slot_order
-                    };
-
-                    // 캐릭터 없는 슬롯
-                    if (!slot.user_character_id.HasValue)
-                    {
-                        slotDTOs.Add(slotDTO);
-                        continue;
-                    }
-
-                    var ucId = slot.user_character_id.Value;
-
-                    // 캐릭터 있는 슬롯: 맵에서 안전하게 조회
-                    if (!userCharacterMap.TryGetValue(slot.user_character_id.Value, out var userChar))
-                    {
-                        Console.WriteLine($"[DEBUG] missing userChar: ucId={ucId}");
-                        slotDTOs.Add(slotDTO);
-                        continue;
-                    }
-
-                    if (!characterTemplateMap.TryGetValue(userChar.template_id, out var template))
-                    {
-                        Console.WriteLine($"[DEBUG] missing template: templateId={userChar.template_id}");
-                        slotDTOs.Add(slotDTO);
-                        continue;
-                    }
-
-                    slotDTO.userCharacter = UserCharacterDTO.FromUserCharacter(userChar);
-                    slotDTO.characterTemplate = CharacterTemplateDTO.FromCharacterTemplate(template);
-
-                    slotDTOs.Add(slotDTO);
-                }
-
-                deckDTO.deckSlots = slotDTOs;
-                resultDeckDTOs.Add(deckDTO);
+                slotByDeckId.TryGetValue(deck.Id, out var slots);
+                result.Add(DeckDTOFactory.Create(deck, slots, userCharacterMap, characterTemplateMap));
             }
 
-            return resultDeckDTOs;
+            return result;
         }
 
         public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckIndex, List<int> userCharacterIdList)
@@ -223,52 +190,9 @@ namespace WebServerProject.CSR.Services.Deck
                 throw;
             }
 
-            // 갱신된 덱 정보를 읽어와 DTO로 반환
-            var updatedDeck = await GetDeckAsync(userId, deckIndex); // 너의 기존 GetDeckList 로직과 동일
+            var updatedDeck = await GetDeckAsync(userId, deckIndex);
 
             return updatedDeck;
-        }
-
-        // TODO : 최적화 필요 
-        // 현재 슬롯 마다 캐릭터 정보와 템플릿 정보를 별도로 조회하고 있음.
-        // 추후 한번에 묶어서 조회하는 방식으로 변경 필요.
-        private async Task<List<DeckSlotDTO>> BuildDeckSlotDTOsAsync(List<DeckSlot> deckSlots)
-        {
-            List<DeckSlotDTO> result = new List<DeckSlotDTO>();
-
-            foreach (var slot in deckSlots)
-            {
-                var slotDTO = new DeckSlotDTO
-                {
-                    slotIndex = slot.slot_order
-                };
-
-                // 빈 슬롯
-                if (slot.user_character_id == null)
-                {
-                    result.Add(slotDTO);
-                    continue;
-                }
-
-                var userCharacter = await _characterRepository.GetUserCharacterAsync((int)slot.user_character_id);
-                if (userCharacter == null)
-                {
-                    throw new InvalidOperationException($"유효하지 않은 캐릭터입니다. (UserCharacterId: {slot.user_character_id})");
-                }
-
-                var characterTemplate = await _characterRepository.GetCharacterTemplateAsync(userCharacter.template_id);
-                if (characterTemplate == null)
-                {
-                    throw new InvalidOperationException($"유효하지 않은 캐릭터 템플릿입니다. (TemplateId: {userCharacter.template_id})");
-                }
-
-                slotDTO.userCharacter = UserCharacterDTO.FromUserCharacter(userCharacter);
-                slotDTO.characterTemplate = CharacterTemplateDTO.FromCharacterTemplate(characterTemplate);
-
-                result.Add(slotDTO);
-            }
-
-            return result;
         }
 
         public async Task CreateDefaultDecksAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)

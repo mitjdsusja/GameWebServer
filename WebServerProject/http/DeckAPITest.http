@@ -14,5 +14,5 @@ Content-Type: application/json
 {
   "userId" : "20",
   "deckIndex" : "1",
-  "characterIds" : [ "13", "0", "0" ]
+  "characterIds" : [ "12", "13", "0" ]
 }

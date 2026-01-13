@@ -9,7 +9,7 @@ namespace WebServerProject.CSR.Repositories.Character
     {
         public Task<UserCharacter> GetUserCharacterAsync(int userId, int characterTemplateId, QueryFactory? db = null, IDbTransaction? tx = null);
         public Task<List<UserCharacter>> GetUserCharacterListAsync(int userId);
-        public Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userIds);
+        public Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userCharacterIds);
         public Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds);
         public Task<UserCharacter> GetUserCharacterAsync(int userCharacterId, QueryFactory? db = null, IDbTransaction? tx = null);
         public Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId);
