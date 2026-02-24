@@ -47,7 +47,7 @@ namespace WebServerProject.CSR.Services.Gacha
             adjustedRates = adjustedRates.OrderBy(r => r.rarity).ToList();
 
             // 각 희귀도 확률 합산
-            var totalRate = baseRarityRates.Sum(r => r.rate);
+            var totalRate = adjustedRates.Sum(r => r.rate);
             if (totalRate <= 0)
             {
                 return null;
@@ -60,7 +60,7 @@ namespace WebServerProject.CSR.Services.Gacha
             double currentCumulativeProbability = 0.0;
             int selectedRarity = 1; // 기본값
 
-            foreach (var rarityInfo in baseRarityRates)
+            foreach (var rarityInfo in adjustedRates)
             {
                 currentCumulativeProbability += rarityInfo.rate;
 
