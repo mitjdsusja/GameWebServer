@@ -47,7 +47,7 @@ namespace WebServerProject.CSR.Services
 
             var stats = await _userRepository.GetUserStatsByIdAsync(userId);
             var profile = await _userRepository.GetUserProfilesByIdAsync(userId);
-            var resources = await _userRepository.GetUserResourcesByIdAsync(userId);
+            var resources = await _userRepository.GetUserResourcesAsync(userId);
 
             // 하나라도 없으면 예외 처리
             if (stats == null || profile == null || resources == null)
@@ -70,7 +70,7 @@ namespace WebServerProject.CSR.Services
         public async Task GrantBattleRewardAsync(BattleRewardDTO reward, QueryFactory? db = null, IDbTransaction? tx = null)
         {
             // 보상 지급
-            var userResources = await _userRepository.GetUserResourcesByIdAsync(reward.userId, db, tx);
+            var userResources = await _userRepository.GetUserResourcesAsync(reward.userId, db, tx);
             if(userResources == null)
             {
                 throw new InvalidOperationException("유저 자원 정보가 없습니다.");

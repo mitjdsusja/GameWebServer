@@ -1,9 +1,11 @@
-﻿using SqlKata.Execution;
+﻿using Dapper;
+using SqlKata.Execution;
+using System.Data;
+using WebServerProject.Models.Entities.UserEntity;
 using UserEntity = WebServerProject.Models.Entities.UserEntity.User;
-using UserStateEntity = WebServerProject.Models.Entities.UserEntity.UserStats;
 using UserProfileEntity = WebServerProject.Models.Entities.UserEntity.UserProfiles;
 using UserResourcesEntity = WebServerProject.Models.Entities.UserEntity.UserResources;
-using System.Data;
+using UserStateEntity = WebServerProject.Models.Entities.UserEntity.UserStats;
 
 namespace WebServerProject.CSR.Repositories.User
 {
@@ -14,7 +16,8 @@ namespace WebServerProject.CSR.Repositories.User
         Task<UserEntity?> GetUserByEmailAsync(string email, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<UserStateEntity?> GetUserStatsByIdAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<UserProfileEntity?> GetUserProfilesByIdAsync(int userId);
-        Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task<UserResourcesEntity?> GetUserResourcesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task<UserResourcesEntity?> GetUserResourcesForUpdateAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserStatsAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserProfilesAsync(int userId, string nickname, QueryFactory? db = null, IDbTransaction? tx = null);
@@ -75,15 +78,6 @@ namespace WebServerProject.CSR.Repositories.User
             return await _db.Query("user_profiles")
                             .Where("user_id", userId)
                             .FirstOrDefaultAsync<UserProfileEntity>();
-        }
-
-        public async Task<UserResourcesEntity?> GetUserResourcesByIdAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
-        {
-            var q = db ?? _db;
-
-            return await q.Query("user_resources")
-                            .Where("user_id", userId)
-                            .FirstOrDefaultAsync<UserResourcesEntity>(tx);
         }
 
         public async Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null)
@@ -184,6 +178,28 @@ namespace WebServerProject.CSR.Repositories.User
                                   }, tx);
 
             return result == 1;
+        }
+
+        public async Task<UserResourcesEntity?> GetUserResourcesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            return await q.Query("user_resources")
+                            .Where("user_id", userId)
+                            .FirstOrDefaultAsync<UserResourcesEntity>(tx);
+        }
+
+        public async Task<UserResourcesEntity?> GetUserResourcesForUpdateAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            string sql = "SELECT * FROM user_resources WHERE user_id = @UserId FOR UPDATE";
+
+            return await q.Connection.QueryFirstOrDefaultAsync<UserResourcesEntity>(
+                sql,
+                new { UserId = userId },
+                tx
+            );
         }
     }
 }

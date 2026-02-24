@@ -14,6 +14,11 @@ namespace WebServerProject.Models.DTOs.Gacha
         public DateTime? start_time { get; set; }
         public DateTime? end_time { get; set; }
 
+        public int soft_pity_threshold { get; set; } = 0;
+        public int hard_pity_threshold { get; set; } = 0;
+        public double pity_bonus_rate { get; set; } = 0.0;
+        public int pity_target_rarity { get; set; } = 0;
+
         public static GachaMasterDTO FromGachaMaster(GachaMaster gachaMaster)
         {
             return new GachaMasterDTO
@@ -26,7 +31,13 @@ namespace WebServerProject.Models.DTOs.Gacha
                 cost_amount = gachaMaster.cost_amount,
                 is_limited = gachaMaster.is_limited,
                 start_time = gachaMaster.start_time,
-                end_time = gachaMaster.end_time
+                end_time = gachaMaster.end_time,
+
+                soft_pity_threshold = gachaMaster.soft_pity_threshold,
+                hard_pity_threshold = gachaMaster.hard_pity_threshold,
+                pity_bonus_rate = gachaMaster.pity_bonus_rate,
+                pity_target_rarity = gachaMaster.pity_target_rarity,
+
             };
         }
     }

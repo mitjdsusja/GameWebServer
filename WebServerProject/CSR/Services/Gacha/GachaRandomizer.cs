@@ -8,13 +8,11 @@ namespace WebServerProject.CSR.Services.Gacha
 {
     public interface IGachaRandomizer
     {
-        public Task<GachaPool?> SelectItemAsync(string gachaId, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task<GachaPool?> SelectItemAsync(GachaMaster gacha, int pityStack, QueryFactory? db = null, IDbTransaction? tx = null);
     }
 
     public class GachaRandomizer : IGachaRandomizer
     {
-        public readonly Random _random;
-
         public ILogger<GachaRandomizer> _logger;
         public readonly IGachaRepository _gachaRepository;
 
@@ -22,49 +20,53 @@ namespace WebServerProject.CSR.Services.Gacha
             ILogger<GachaRandomizer> logger,
             IGachaRepository gachaRepository)
         {
-            _random = new Random();
-
             _logger = logger;
             _gachaRepository = gachaRepository;
         }
 
-        public async Task<GachaPool?> SelectItemAsync(string gachaCode, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task<GachaPool?> SelectItemAsync(GachaMaster gacha, int pityStack, QueryFactory? db = null, IDbTransaction? tx = null)
         {
-            // 가챠 정보 불러오기
-            var gacha = await _gachaRepository.GetGachaAsync(gachaCode, db, tx);
-            if(gacha == null)
+            // 가챠 확률 불러오기
+            List<GachaRarityRate> baseRarityRates = await _gachaRepository.GetGachaRarityRateListAsync(gacha.id , db, tx);
+            if (baseRarityRates == null || baseRarityRates.Count == 0)
             {
                 return null;
             }
 
-            // 가챠 확률 불러오기
-            var rarityRates = await _gachaRepository.GetGachaRarityRateListAsync(gacha.id, db, tx);
-            if(rarityRates == null || rarityRates.Count == 0)
-            {
-                return null;
-            }
-            rarityRates = rarityRates.OrderBy(r => r.rarity).ToList();
+            // 천장 시스템을 적용하여 확률 동적 재계산
+            var adjustedRates = ApplyHybridPity(
+                baseRarityRates,
+                pityStack,
+                gacha.soft_pity_threshold,
+                gacha.hard_pity_threshold,
+                gacha.pity_bonus_rate,
+                gacha.pity_target_rarity
+            );
+
+            // 재계산된 확률 리스트를 등급순으로 정렬
+            adjustedRates = adjustedRates.OrderBy(r => r.rarity).ToList();
 
             // 각 희귀도 확률 합산
-            var totalRate = rarityRates.Sum(r => r.rate);
+            var totalRate = baseRarityRates.Sum(r => r.rate);
             if (totalRate <= 0)
             {
                 return null;
             }
 
-            // 난수 기반 희귀도 결정
-            // TODO : Random() 객체 매번 생성x 
-            // 트래픽 몰릴시 같은 시드값이 사용될 가능성이 있음. 
-            double roll = _random.NextDouble() * totalRate;
-            double cumulative = 0;
-            int selectedRarity = 1;
+            // 0부터 총 확률(totalRate) 사이의 무작위 목표 지점 설정
+            double targetProbability = Random.Shared.NextDouble() * totalRate;
 
-            foreach (var rate in rarityRates)
+            // 확률 누적기 초기화 및 기본 희귀도 설정
+            double currentCumulativeProbability = 0.0;
+            int selectedRarity = 1; // 기본값
+
+            foreach (var rarityInfo in baseRarityRates)
             {
-                cumulative += rate.rate;
-                if (roll <= cumulative)
+                currentCumulativeProbability += rarityInfo.rate;
+
+                if (targetProbability <= currentCumulativeProbability)
                 {
-                    selectedRarity = rate.rarity;
+                    selectedRarity = rarityInfo.rarity;
                     break;
                 }
             }
@@ -77,11 +79,46 @@ namespace WebServerProject.CSR.Services.Gacha
             }
 
             // 랜덤 아이템 선택
-            var selectedItem = poolItems[_random.Next(poolItems.Count)];
-
-            // 반환 
+            var selectedItem = poolItems[Random.Shared.Next(poolItems.Count)];
 
             return selectedItem;
+        }
+
+        private List<GachaRarityRate>  ApplyHybridPity(
+            List<GachaRarityRate> baseRates,
+            int currentPityStack,
+            int softPityThreshold,
+            int hardPityThreshold,
+            double bonusRatePerStack,
+            int targetRarity)
+        {
+            var adjustedRates = baseRates.Select(r => new GachaRarityRate { rarity = r.rarity, rate = r.rate }).ToList();
+            int nextPullCount = currentPityStack + 1;
+
+            // 하드 피티: 100% 확정
+            if (hardPityThreshold > 0 && nextPullCount >= hardPityThreshold)
+            {
+                foreach (var rateObj in adjustedRates)
+                {
+                    rateObj.rate = (rateObj.rarity == targetRarity) ? 100.0 : 0.0;
+                }
+                return adjustedRates;
+            }
+
+            // 소프트 피티: 점진적 증가
+            if (softPityThreshold > 0 && nextPullCount >= softPityThreshold)
+            {
+                int bonusStacks = nextPullCount - softPityThreshold + 1;
+                double totalBonusRate = bonusStacks * bonusRatePerStack;
+
+                var targetRateObj = adjustedRates.FirstOrDefault(r => r.rarity == targetRarity);
+                if (targetRateObj != null)
+                {
+                    targetRateObj.rate += totalBonusRate;
+                }
+            }
+
+            return adjustedRates;
         }
     }
 }

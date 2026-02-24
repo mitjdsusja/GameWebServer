@@ -9,6 +9,7 @@ using WebServerProject.CSR.Services.Gacha;
 using WebServerProject.Models.DTOs.Gacha;
 using WebServerProject.Models.DTOs.UserEntity;
 using WebServerProject.Models.Entities.CharacterEntity;
+using WebServerProject.Models.Entities.Gacha;
 using WebServerProject.Models.Entities.GachaEntity;
 using WebServerProject.Models.Entities.UserEntity;
 
@@ -91,8 +92,19 @@ namespace WebServerProject.CSR.Services
 
             try
             {
+                // 뽑기 마스터 정보 조회
+                var gachaMaster = await _gachaRepository.GetGachaAsync(gachaId, db, tx);
+                if (gachaMaster == null)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "유효하지 않은 가챠입니다."
+                    };
+                }
+
                 // 재화 확인
-                var resource = await _userRepository.GetUserResourcesByIdAsync(userId, db, tx);
+                var resource = await _userRepository.GetUserResourcesForUpdateAsync(userId, db, tx);
                 if (resource == null)
                 {
                     return new GachaDrawResultDTO
@@ -111,17 +123,6 @@ namespace WebServerProject.CSR.Services
                     };
                 }
 
-                // 뽑기 로직
-                var selectedItem = await _gachaRandomizer.SelectItemAsync(gachaId, db, tx);
-                if (selectedItem == null)
-                {
-                    return new GachaDrawResultDTO
-                    {
-                        Success = false,
-                        Message = "가챠 아이템 선택에 실패했습니다."
-                    };
-                }
-
                 // 재화 소모
                 UserResources userResources = new UserResources
                 {
@@ -137,6 +138,26 @@ namespace WebServerProject.CSR.Services
                         Message = "재화 업데이트에 실패했습니다."
                     };
                 }
+
+                // 유저의 천장 스택 조회
+                UserGachaPity pityData = await _gachaRepository.GetUserGachaPityStackForUpdateAsync(userId, gachaMaster.id, db, tx);
+                int currentPityStack = pityData != null ? pityData.pity_stack : 0; // 첫 뽑기인 경우 0으로 초기화
+
+                // 뽑기 로직
+                var selectedItem = await _gachaRandomizer.SelectItemAsync(gachaMaster, currentPityStack, db, tx);
+                if (selectedItem == null)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "가챠 아이템 선택에 실패했습니다."
+                    };
+                }
+
+                // 뽑기 결과에 따른 스택 갱신
+                int newPityStack = (selectedItem.rarity >= gachaMaster.pity_target_rarity) ? 0 : currentPityStack + 1;
+                // 계산된 스택을 DB에 저장
+                await _gachaRepository.UpsertUserGachaPityStackAsync(userId, gachaMaster.id, newPityStack, db, tx);
 
                 // 보상 지급
                 var result = await GrantGachaRewardAsync(userId, selectedItem, db, tx);

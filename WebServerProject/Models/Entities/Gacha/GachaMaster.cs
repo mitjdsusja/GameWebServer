@@ -12,5 +12,10 @@ namespace WebServerProject.Models.Entities.GachaEntity
         public bool is_limited { get; set; }
         public DateTime? start_time { get; set; }
         public DateTime? end_time { get; set; }
+
+        public int soft_pity_threshold { get; set; } = 0;
+        public int hard_pity_threshold { get; set; } = 0;
+        public double pity_bonus_rate { get; set; } = 0.0;
+        public int pity_target_rarity { get; set; } = 0;
     }
 }
