@@ -18,6 +18,7 @@ namespace WebServerProject.CSR.Repositories.User
         Task<UserProfileEntity?> GetUserProfilesByIdAsync(int userId);
         Task<UserResourcesEntity?> GetUserResourcesAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<UserResourcesEntity?> GetUserResourcesForUpdateAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
+        Task<bool> SubtractDiamondAsync(int userId, int amount, QueryFactory? db = null, IDbTransaction? tx = null);
         Task<int> CreateUserAsync(UserEntity user, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserStatsAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
         Task CreateUserProfilesAsync(int userId, string nickname, QueryFactory? db = null, IDbTransaction? tx = null);
@@ -200,6 +201,18 @@ namespace WebServerProject.CSR.Repositories.User
                 new { UserId = userId },
                 tx
             );
+        }
+
+        public async Task<bool> SubtractDiamondAsync(int userId, int amount, QueryFactory? db = null, IDbTransaction? tx = null)
+        {
+            var q = db ?? _db;
+
+            int affectedRows = await q.Query("UserResources")
+                                        .Where("userId", userId)
+                                        .Where("diamond", ">=", amount)
+                                        .DecrementAsync("diamond", amount, tx);
+
+            return affectedRows > 0;
         }
     }
 }

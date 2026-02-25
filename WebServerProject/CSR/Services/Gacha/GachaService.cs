@@ -87,55 +87,32 @@ namespace WebServerProject.CSR.Services
                 };
             }
 
+            // 뽑기 마스터 정보 조회
+            var gachaMaster = await _gachaRepository.GetGachaAsync(gachaId, db);
+            if (gachaMaster == null)
+            {
+                return new GachaDrawResultDTO
+                {
+                    Success = false,
+                    Message = "유효하지 않은 가챠입니다."
+                };
+            }
+
             await using var tx = await conn.BeginTransactionAsync();
             bool committed = false;
 
             try
             {
-                // 뽑기 마스터 정보 조회
-                var gachaMaster = await _gachaRepository.GetGachaAsync(gachaId, db, tx);
-                if (gachaMaster == null)
+                // 재화 확인 및 소모
+                bool isSubtracted = await _userRepository.SubtractDiamondAsync(userId, gachaMaster.cost_amount, db, tx);
+                if (!isSubtracted)
                 {
+                    // 차감 실패 시 (재화 부족 등)
+                    // 원자적 업데이트는 조건에 안 맞으면 0행을 수정하므로 안전하게 리턴 가능
                     return new GachaDrawResultDTO
                     {
                         Success = false,
-                        Message = "유효하지 않은 가챠입니다."
-                    };
-                }
-
-                // 재화 확인
-                var resource = await _userRepository.GetUserResourcesForUpdateAsync(userId, db, tx);
-                if (resource == null)
-                {
-                    return new GachaDrawResultDTO
-                    {
-                        Success = false,
-                        Message = "유저 재화 정보를 찾을 수 없습니다."
-                    };
-                }
-                else if (resource.diamond < 100)
-                {
-                    return new GachaDrawResultDTO
-                    {
-                        Success = false,
-                        Message = "다이아몬드가 부족합니다. 남은 다이아 : " + resource.diamond,
-                        RemainingResources = UserResourcesDTO.FromUserResources(resource)
-                    };
-                }
-
-                // 재화 소모
-                UserResources userResources = new UserResources
-                {
-                    gold = resource.gold,
-                    diamond = resource.diamond - 100
-                };
-                var updateResourcesResult = await _userRepository.UpdateResourcesAsync(user.id, userResources, db, tx);
-                if (updateResourcesResult == false)
-                {
-                    return new GachaDrawResultDTO
-                    {
-                        Success = false,
-                        Message = "재화 업데이트에 실패했습니다."
+                        Message = "다이아가 부족하거나 유저 정보가 유효하지 않습니다."
                     };
                 }
 
@@ -158,6 +135,17 @@ namespace WebServerProject.CSR.Services
                 int newPityStack = (selectedItem.rarity >= gachaMaster.pity_target_rarity) ? 0 : currentPityStack + 1;
                 // 계산된 스택을 DB에 저장
                 await _gachaRepository.UpsertUserGachaPityStackAsync(userId, gachaMaster.id, newPityStack, db, tx);
+
+                // 재화 확인
+                var resource = await _userRepository.GetUserResourcesAsync(userId, db, tx);
+                if(resource == null)
+                {
+                    return new GachaDrawResultDTO
+                    {
+                        Success = false,
+                        Message = "유저 재화 정보를 불러올 수 없습니다."
+                    };
+                }
 
                 // 보상 지급
                 var result = await GrantGachaRewardAsync(userId, selectedItem, db, tx);
@@ -192,7 +180,7 @@ namespace WebServerProject.CSR.Services
                     RemainingResources = new UserResourcesDTO
                     {
                         Gold = resource.gold,
-                        Diamond = resource.diamond - 100,
+                        Diamond = resource.diamond,
                     }
                 };
             }
