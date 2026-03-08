@@ -6,10 +6,10 @@ namespace WebServerProject.CSR.Repositories.Gacha
 {
     public interface IGachaRepository
     {
-        public Task<List<GachaMaster>> GetGachaListAsync();
-        public Task<GachaMaster> GetGachaAsync(string gachaCode, QueryFactory? db = null, IDbTransaction? tx = null);
-        public Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId, QueryFactory? db = null, IDbTransaction? tx = null);
-        public Task<List<GachaPool>> GetGachaPoolByRarityAsync(int gachaId, int rarity);
+        public Task<List<GachaMaster>> GetGachaListAsync(IDbTransaction? tx = null);
+        public Task<GachaMaster> GetGachaAsync(string gachaCode, IDbTransaction? tx = null);
+        public Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId, IDbTransaction? tx = null);
+        public Task<List<GachaPool>> GetGachaPoolByRarityAsync(int gachaId, int rarity, IDbTransaction? tx = null);
     }
     public class GachaRepository : IGachaRepository
     {
@@ -19,41 +19,37 @@ namespace WebServerProject.CSR.Repositories.Gacha
             _db = db;
         }
 
-        public async Task<List<GachaMaster>> GetGachaListAsync()
+        public async Task<List<GachaMaster>> GetGachaListAsync(IDbTransaction? tx = null)
         {
             var result = await _db.Query("gacha_masters")
-                                  .GetAsync<GachaMaster>();
+                                  .GetAsync<GachaMaster>(tx);
 
             return result.ToList();
         }
-        public Task<GachaMaster> GetGachaAsync(string gachaCode, QueryFactory? db = null, IDbTransaction? tx = null)
+        public Task<GachaMaster> GetGachaAsync(string gachaCode, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            var result =  q.Query("gacha_masters")
+            var result =  _db.Query("gacha_masters")
                             .Where("code", gachaCode)
                             .FirstOrDefaultAsync<GachaMaster>(tx);
 
             return result;
         }
 
-        public async Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            var result = await q.Query("gacha_rarity_rates")
+            var result = await _db.Query("gacha_rarity_rates")
                             .Where("gacha_id", gachaId)
                             .GetAsync<GachaRarityRate>(tx);
 
             return result.ToList();
         }
 
-        public async Task<List<GachaPool>> GetGachaPoolByRarityAsync(int gachaId, int rarity)
+        public async Task<List<GachaPool>> GetGachaPoolByRarityAsync(int gachaId, int rarity, IDbTransaction? tx = null)
         {
             var result = await _db.Query("gacha_pools")
                             .Where("gacha_id", gachaId)
                             .Where("rarity", rarity)
-                            .GetAsync<GachaPool>();
+                            .GetAsync<GachaPool>(tx);
 
             return result.ToList();
         }

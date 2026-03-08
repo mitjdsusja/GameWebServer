@@ -1,6 +1,8 @@
 ﻿using MySqlConnector;
 using SqlKata.Compilers;
 using SqlKata.Execution;
+using System.Data;
+using System.Data.Common;
 using WebServerProject.CSR.Services.Deck;
 using WebServerProject.CSR.Services.Stage;
 using WebServerProject.Models.DTOs.Battle;
@@ -14,20 +16,19 @@ namespace WebServerProject.CSR.Services
 
     public class BattleService : IBattleService
     {
-        private readonly string _connectionString;
+        private readonly QueryFactory _db;
         private readonly IUserService _userService;
         private readonly IStageService _stageService;
         private readonly IDeckService _deckService;
 
         public BattleService(
-            IConfiguration config,
+            QueryFactory db,
             IUserService userService,
             IStageService stageService,
             IDeckService deckService
             )
         {
-            _connectionString = config.GetConnectionString("GameDb")
-            ?? throw new InvalidOperationException("ConnectionStrings:GameDb is missing.");
+            _db = db;
             _userService = userService;
             _stageService = stageService;
             _deckService = deckService;
@@ -76,35 +77,20 @@ namespace WebServerProject.CSR.Services
             }
 
             // 결과 저장(보상 지급)
-            await using var conn = new MySqlConnection(_connectionString);
-            await conn.OpenAsync();
-            var db = new QueryFactory(conn, new MySqlCompiler());
-            await using var tx = await conn.BeginTransactionAsync();
-
             BattleRewardDTO battleReward = new BattleRewardDTO();
             battleReward.userId = userId;   
             battleReward.gold = stageDTO.rewardGold;
             battleReward.exp = stageDTO.rewardExp;
 
-            try
-            {
-                await _userService.GrantBattleRewardAsync(battleReward, db, tx);
+            await _userService.GrantBattleRewardAsync(battleReward);
 
-                await tx.CommitAsync();
-
-                return new StartStageBattleResult
-                {
-                    success = true,
-                    message = "전투에서 승리하였습니다.",
-                    rewardGold = battleReward.gold,
-                    rewardExp = battleReward.exp
-                };
-            }
-            catch
+            return new StartStageBattleResult
             {
-                try { await tx.RollbackAsync(); } catch { }
-                throw;
-            }   
+                success = true,
+                message = "전투에서 승리하였습니다.",
+                rewardGold = battleReward.gold,
+                rewardExp = battleReward.exp
+            };
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using SqlKata.Execution;
 using System.Data;
+using System.Data.Common;
 using WebServerProject.CSR.Repositories.Character;
 using WebServerProject.CSR.Repositories.Deck;
 using WebServerProject.Models.DTOs.Character;
@@ -14,7 +15,7 @@ namespace WebServerProject.CSR.Services.Deck
         public Task<DeckDTO> GetDeckAsync(int userId, int deckIndex);
         public Task<List<DeckDTO>> GetDeckListAsync(int userId);
         public Task<DeckDTO> UpdateDeckAsync(int userId, int deckId, List<int> characterId);
-        public Task CreateDefaultDecksAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task CreateDefaultDecksAsync(int userId, IDbTransaction? tx = null);
     }
 
     public class DeckService : IDeckService
@@ -35,6 +36,7 @@ namespace WebServerProject.CSR.Services.Deck
 
         public async Task<DeckDTO> GetDeckAsync(int userId, int deckIndex)
         {
+            // 덱 조회
             var deck = await _deckRepository.GetDeckAsync(userId, deckIndex);
             if(deck == null)
             {
@@ -73,6 +75,7 @@ namespace WebServerProject.CSR.Services.Deck
 
         public async Task<List<DeckDTO>> GetDeckListAsync(int userId)
         { 
+            // 덱 목록 조회
             var decks = await _deckRepository.GetDeckListAsync(userId);
             if(decks == null || decks.Count == 0)
             {
@@ -80,6 +83,8 @@ namespace WebServerProject.CSR.Services.Deck
             }
 
             var deckIds = decks.Select(d => d.Id).ToList();
+            
+            // 덱 슬롯 일괄 조회
             var allSlots = await _deckRepository.GetDeckSlotsByDeckIdsAsync(deckIds);
 
             var slotByDeckId = allSlots
@@ -119,17 +124,6 @@ namespace WebServerProject.CSR.Services.Deck
 
         public async Task<DeckDTO> UpdateDeckAsync(int userId, int deckIndex, List<int> userCharacterIdList)
         {
-            // 덱 검증
-            var deck = await _deckRepository.GetDeckAsync(userId, deckIndex);
-            if (deck == null)
-            {
-                throw new InvalidOperationException("덱이 존재하지 않습니다.");
-            }
-            else if(deck.user_id != userId)
-            {
-                throw new InvalidOperationException("해당 덱은 유저의 소유가 아닙니다.");
-            }
-
             // 슬롯 개수 검증
             if (userCharacterIdList == null || userCharacterIdList.Count == 0)
             {
@@ -140,33 +134,53 @@ namespace WebServerProject.CSR.Services.Deck
                 throw new InvalidOperationException("덱 슬롯 개수는 최대 5개입니다.");
             }
 
-            // 캐릭터 소유권 검증
-            foreach (var userCharacterId in userCharacterIdList)
+            var connection = _db.Connection as DbConnection;
+            if (connection == null)
             {
-                if (userCharacterId <= 0)
-                    continue;
-
-                var userCharacter = await _characterRepository.GetUserCharacterAsync(userId, userCharacterId);
-                if (userCharacter == null)
-                {
-                    throw new InvalidOperationException($"해당 유저는 캐릭터 {userCharacterId}를 소유하고 있지 않습니다.");
-                }
-                else if (userCharacter.user_id != userId)
-                {
-                    throw new InvalidOperationException($"캐릭터 {userCharacterId}는 해당 유저의 것이 아닙니다.");
-                }
+                throw new InvalidOperationException("데이터베이스 연결을 가져올 수 없습니다.");
             }
-
-            var conn = _db.Connection;
-            conn.Open();
-            using var tx = conn.BeginTransaction();
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+            }
+            using var tx = connection.BeginTransaction();
 
             try
             {
+                // 덱 조회
+                var deck = await _deckRepository.GetDeckForUpdateAsync(userId, deckIndex, tx);
+                if (deck == null)
+                {
+                    throw new InvalidOperationException("덱이 존재하지 않습니다.");
+                }
+                else if (deck.user_id != userId)
+                {
+                    throw new InvalidOperationException("해당 덱은 유저의 소유가 아닙니다.");
+                }
+
+                // 캐릭터 소유권 검증
+                // N + 1 쿼리 발생 
+                foreach (var userCharacterId in userCharacterIdList)
+                {
+                    if (userCharacterId <= 0)
+                        continue;
+
+                    var userCharacter = await _characterRepository.GetUserCharacterAsync(userId, userCharacterId, tx);
+                    if (userCharacter == null)
+                    {
+                        throw new InvalidOperationException($"해당 유저는 캐릭터 {userCharacterId}를 소유하고 있지 않습니다.");
+                    }
+                    else if (userCharacter.user_id != userId)
+                    {
+                        throw new InvalidOperationException($"캐릭터 {userCharacterId}는 해당 유저의 것이 아닙니다.");
+                    }
+                }
+
                 // 기존 슬롯 삭제
-                await _deckRepository.DeleteDeckSlotsAsync(deck.Id, _db, tx);
+                await _deckRepository.DeleteDeckSlotsAsync(deck.Id, tx);
 
                 // 새로운 슬롯 삽입
+                // N + 1 쿼리 발생
                 for (int i = 0; i < userCharacterIdList.Count; i++)
                 {
                     int slotOrder = i + 1;
@@ -179,14 +193,21 @@ namespace WebServerProject.CSR.Services.Deck
                         user_character_id = userCharacterId
                     };
 
-                    await _deckRepository.InsertDeckSlotAsync(newSlot, _db, tx);
+                    await _deckRepository.InsertDeckSlotAsync(newSlot, tx);
                 }
 
-                tx.Commit();
+                await tx.CommitAsync();
             }
             catch (Exception)
             {
-                tx.Rollback();
+                try
+                {
+                    await tx.RollbackAsync();
+                }
+                catch (Exception ex)
+                {
+
+                }
                 throw;
             }
 
@@ -195,7 +216,7 @@ namespace WebServerProject.CSR.Services.Deck
             return updatedDeck;
         }
 
-        public async Task CreateDefaultDecksAsync(int userId, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task CreateDefaultDecksAsync(int userId, IDbTransaction? tx = null)
         {
             const int DEFAULT_DECK_COUNT = 3;
             const int DEFAULT_SLOT_COUNT = 3;
@@ -206,7 +227,7 @@ namespace WebServerProject.CSR.Services.Deck
                 {
                     user_id = userId,
                     deck_index = i+1,
-                }, db, tx);
+                }, tx);
 
                 for (byte slot = 0; slot < DEFAULT_SLOT_COUNT; slot++)
                 {
@@ -215,7 +236,7 @@ namespace WebServerProject.CSR.Services.Deck
                         deck_id = deckId,
                         user_character_id = null,
                         slot_order = (byte)(slot + 1),
-                    }, db, tx);
+                    }, tx);
                 }
             }
         }

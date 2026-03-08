@@ -56,10 +56,10 @@ namespace WebServerProject.CSR.Contollers
                 {
                     success = loginResult.success,
                     message = loginResult.message,
-                    token = loginResult.token.Token,
-                    userId = loginResult.token.UserId,
-                    sername = loginResult.token.Username,
-                    expiresAt = loginResult.token.ExpiresAt
+                    token = loginResult.token?.Token,
+                    userId = loginResult.token?.UserId,
+                    userName = loginResult.token?.Username,
+                    expiresAt = loginResult.token?.ExpiresAt
                 };
             }
             catch (InvalidOperationException ex)

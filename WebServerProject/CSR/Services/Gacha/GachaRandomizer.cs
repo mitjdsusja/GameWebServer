@@ -8,7 +8,7 @@ namespace WebServerProject.CSR.Services.Gacha
 {
     public interface IGachaRandomizer
     {
-        public Task<GachaPool?> SelectItemAsync(string gachaId, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task<GachaPool?> SelectItemAsync(string gachaId, IDbTransaction? tx = null);
     }
 
     public class GachaRandomizer : IGachaRandomizer
@@ -28,17 +28,17 @@ namespace WebServerProject.CSR.Services.Gacha
             _gachaRepository = gachaRepository;
         }
 
-        public async Task<GachaPool?> SelectItemAsync(string gachaCode, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task<GachaPool?> SelectItemAsync(string gachaCode, IDbTransaction? tx = null)
         {
             // 가챠 정보 불러오기
-            var gacha = await _gachaRepository.GetGachaAsync(gachaCode, db, tx);
+            var gacha = await _gachaRepository.GetGachaAsync(gachaCode, tx);
             if(gacha == null)
             {
                 return null;
             }
 
             // 가챠 확률 불러오기
-            var rarityRates = await _gachaRepository.GetGachaRarityRateListAsync(gacha.id, db, tx);
+            var rarityRates = await _gachaRepository.GetGachaRarityRateListAsync(gacha.id, tx);
             if(rarityRates == null || rarityRates.Count == 0)
             {
                 return null;
