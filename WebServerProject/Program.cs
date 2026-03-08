@@ -52,20 +52,23 @@ builder.Services.AddScoped<IStageRepository, StageRepository>();
 builder.Services.AddScoped<IEnemyRepository, EnemyRepository>();
 builder.Services.AddScoped<IBattleService, BattleService>();
 
-// MySQL 연결 설정
-var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-var dbUser = Environment.GetEnvironmentVariable("DB_USER");
-var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
-
-var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser};password={dbPass}";
-
-builder.Configuration["ConnectionStrings:GameDb"] = connectionString;
-
-// SQLKata / QueryFactory DI 등록 (요청당 1개: Scoped)
+// 2. SQLKata / QueryFactory DI 등록
 builder.Services.AddScoped<QueryFactory>(sp =>
 {
-    var connection = new MySqlConnection(connectionString); // 요청마다 새 커넥션
+    // 내부에서 IConfiguration을 꺼내 쓰면 더 유연합니다.
+    var configuration = sp.GetRequiredService<IConfiguration>();
+
+    // appsettings.json이나 환경변수(DB_HOST, DB_USER 등)에서 값을 알아서 찾아옵니다.
+    var dbHost = configuration["DB_HOST"] ?? "localhost";
+    var dbUser = configuration["DB_USER"] ?? "root";
+    var dbPass = configuration["DB_PASS"];
+
+    // 문자열 보간법으로 연결 문자열 생성
+    var connectionString = $"server={dbHost};port=3306;database=gamedb;user={dbUser};password={dbPass};Pooling=true;Max Pool Size=100;";
+
+    var connection = new MySqlConnection(connectionString);
     var compiler = new MySqlCompiler();
+
     return new QueryFactory(connection, compiler);
 });
 
