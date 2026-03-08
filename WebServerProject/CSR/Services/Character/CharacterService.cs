@@ -1,4 +1,5 @@
-﻿using WebServerProject.CSR.Repositories.Character;
+﻿using SqlKata.Execution;
+using WebServerProject.CSR.Repositories.Character;
 using WebServerProject.Models.DTOs.Character;
 
 namespace WebServerProject.CSR.Services.Character
@@ -10,10 +11,14 @@ namespace WebServerProject.CSR.Services.Character
 
     public class CharacterService : ICharacterService
     {
-        public readonly ICharacterRepository _characterRepository;
+        private readonly QueryFactory _db;
+        private readonly ICharacterRepository _characterRepository;
 
-        public CharacterService(ICharacterRepository characterRepository)
+        public CharacterService(
+            QueryFactory db,
+            ICharacterRepository characterRepository)
         {
+            _db = db;
             _characterRepository = characterRepository;
         }
 

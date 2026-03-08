@@ -1,6 +1,8 @@
 ﻿using MySqlConnector;
 using SqlKata.Compilers;
 using SqlKata.Execution;
+using System.Data;
+using System.Data.Common;
 using WebServerProject.CSR.Repositories.User;
 using WebServerProject.CSR.Services.Deck;
 using WebServerProject.Models.Entities.UserEntity;
@@ -18,15 +20,15 @@ namespace WebServerProject.CSR.Services.Auth
 
     public class AuthService : IAuthService
     {
+        private readonly QueryFactory _db;
         private readonly IUserRepository _userRepository;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IAuthTokenService _tokenService;
 
         private readonly IDeckService _deckService;
 
-        private readonly string _connectionString;
-
         public AuthService(
+            QueryFactory db,
             IUserRepository userRepository,
             IPasswordHasher passwordHasher,
             IAuthTokenService tokenService,
@@ -34,45 +36,41 @@ namespace WebServerProject.CSR.Services.Auth
             IConfiguration config
             )
         {
+            _db = db;
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
 
             _deckService = deckService;
 
-            _connectionString = config.GetConnectionString("GameDb")
-            ?? throw new InvalidOperationException("ConnectionStrings:GameDb is missing.");
         }
 
         public async Task<RegisterResult> RegisterAsync(string username, string email, string password)
         {
-            await using var conn = new MySqlConnection(_connectionString);
-            await conn.OpenAsync();
-
-            var db = new QueryFactory(conn, new MySqlCompiler());
-
-            await using var tx = await conn.BeginTransactionAsync();
-
             // 입력값 검증
-            if (string.IsNullOrWhiteSpace(username) ||
-                string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
-            {
-                return new RegisterResult
-                {
-                    success = false,
-                    message = "사용자 이름, 이메일, 비밀번호는 필수 입력 항목입니다."
-                };
-            }
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+                return new RegisterResult { success = false, message = "모든 항목을 입력해주세요." };
+
             if (password.Length < 8)
+                return new RegisterResult { success = false, message = "비밀번호는 8자 이상이어야 합니다." };
+
+            // DB 연결 보장 (이미 주입된 Connection 사용)
+            var connection = _db.Connection as DbConnection;
+            if (connection == null)
             {
-                return new RegisterResult { success = false, message = "비밀번호는 최소 8자 이상이어야 합니다." };
+                throw new InvalidOperationException("데이터베이스 연결 객체가 올바르지 않습니다.");
             }
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync();
+            }
+
+            await using var tx = await connection.BeginTransactionAsync();
 
             try
             {
                 // UserName 및 Email 중복 확인
-                var usernameCheck = await _userRepository.GetUserByUsernameAsync(username, db, tx);
+                var usernameCheck = await _userRepository.GetUserByUsernameAsync(username, tx);
                 if(usernameCheck != null)
                 {
                     return new RegisterResult
@@ -81,7 +79,7 @@ namespace WebServerProject.CSR.Services.Auth
                         message = "이미 존재하는 사용자 이름입니다."
                     };
                 }
-                var userEmailCheck = await _userRepository.GetUserByEmailAsync(email, db, tx);
+                var userEmailCheck = await _userRepository.GetUserByEmailAsync(email, tx);
                 if(userEmailCheck != null)
                 {
                     return new RegisterResult
@@ -103,12 +101,12 @@ namespace WebServerProject.CSR.Services.Auth
                 };
 
                 // UserData 기본 생성
-                int userId = await _userRepository.CreateUserAsync(newUser, db, tx);
-                await _userRepository.CreateUserProfilesAsync(userId, newUser.username, db, tx);
-                await _userRepository.CreateUserStatsAsync(userId, db, tx);
-                await _userRepository.CreateUserResourcesAsync(userId, db, tx);
+                int userId = await _userRepository.CreateUserAsync(newUser, tx);
+                await _userRepository.CreateUserProfilesAsync(userId, newUser.username, tx);
+                await _userRepository.CreateUserStatsAsync(userId, tx);
+                await _userRepository.CreateUserResourcesAsync(userId, tx);
 
-                await _deckService.CreateDefaultDecksAsync(userId, db, tx);
+                await _deckService.CreateDefaultDecksAsync(userId, tx);
 
                 await tx.CommitAsync();
 

@@ -1,6 +1,7 @@
-﻿using SqlKata.Execution;
+﻿using Dapper;
+using SqlKata;
+using SqlKata.Execution;
 using System.Data;
-using WebServerProject.Models.Entities.DeckEntity;
 using DeckEntity =  WebServerProject.Models.Entities.DeckEntity.Deck;
 using DeckSlotEntity = WebServerProject.Models.Entities.DeckEntity.DeckSlot;
 
@@ -8,16 +9,17 @@ namespace WebServerProject.CSR.Repositories.Deck
 {
     public interface IDeckRepository
     {
-        public Task<DeckEntity> GetDeckAsync(int userId, int deckIndex);
-        public Task<List<DeckEntity>> GetDeckListAsync(int userId);
-        public Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId);
-        public Task<List<DeckSlotEntity>> GetDeckSlotsByDeckIdsAsync(List<int> deckIds);
+        public Task<DeckEntity> GetDeckAsync(int userId, int deckIndex, IDbTransaction? tx = null);
+        public Task<DeckEntity> GetDeckForUpdateAsync(int userId, int deckIndex, IDbTransaction? tx = null);
+        public Task<List<DeckEntity>> GetDeckListAsync(int userId, IDbTransaction? tx = null);
+        public Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId, IDbTransaction? tx = null);
+        public Task<List<DeckSlotEntity>> GetDeckSlotsByDeckIdsAsync(List<int> deckIds, IDbTransaction? tx = null);
 
-        public Task DeleteDeckSlotsAsync(int deckId, QueryFactory? db = null, IDbTransaction? tx = null);
-        public Task InsertDeckSlotAsync(DeckSlotEntity slot, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task DeleteDeckSlotsAsync(int deckId, IDbTransaction? tx = null);
+        public Task InsertDeckSlotAsync(DeckSlotEntity slot, IDbTransaction? tx = null);
 
-        public Task<int> CreateDeckAsync(DeckEntity deck, QueryFactory? db = null, IDbTransaction? tx = null);
-        public Task CreateDeckSlotAsync(DeckSlotEntity deckSlot, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task<int> CreateDeckAsync(DeckEntity deck, IDbTransaction? tx = null);
+        public Task CreateDeckSlotAsync(DeckSlotEntity deckSlot, IDbTransaction? tx = null);
     }
 
     public class DeckRepository : IDeckRepository
@@ -29,7 +31,7 @@ namespace WebServerProject.CSR.Repositories.Deck
             _db = db;
         }
 
-        public async Task<DeckEntity> GetDeckAsync(int userId, int deckIndex)
+        public async Task<DeckEntity> GetDeckAsync(int userId, int deckIndex, IDbTransaction? tx = null)
         {
             var deck = await _db.Query("decks")
                                 .Where("user_id", userId)
@@ -39,7 +41,7 @@ namespace WebServerProject.CSR.Repositories.Deck
             return deck;
         }
 
-        public async Task<List<DeckEntity>> GetDeckListAsync(int userId)
+        public async Task<List<DeckEntity>> GetDeckListAsync(int userId, IDbTransaction? tx = null)
         {
             var deck = await _db.Query("decks")
                           .Where("user_id", userId)
@@ -48,7 +50,7 @@ namespace WebServerProject.CSR.Repositories.Deck
             return deck.ToList();
         }
 
-        public async Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId)
+        public async Task<List<DeckSlotEntity>> GetDeckSlotsAsync(int deckId, IDbTransaction? tx = null)
         {
             var deckSlots = await _db.Query("deck_slots")
                                      .Where("deck_id", deckId)
@@ -58,7 +60,7 @@ namespace WebServerProject.CSR.Repositories.Deck
             return deckSlots.ToList();
         }
 
-        public async Task<List<DeckSlotEntity>> GetDeckSlotsByDeckIdsAsync(List<int> deckIds)
+        public async Task<List<DeckSlotEntity>> GetDeckSlotsByDeckIdsAsync(List<int> deckIds, IDbTransaction? tx = null)
         {
             var deckSlots =  await _db.Query("deck_slots")
                                      .WhereIn("deck_id", deckIds)
@@ -68,20 +70,16 @@ namespace WebServerProject.CSR.Repositories.Deck
             return deckSlots.ToList();
         }
 
-        public async Task DeleteDeckSlotsAsync(int deckId, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task DeleteDeckSlotsAsync(int deckId, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            await q.Query("deck_slots")
+            await _db.Query("deck_slots")
                      .Where("deck_id", deckId)
                      .DeleteAsync(tx);
         }
 
-        public async Task InsertDeckSlotAsync(DeckSlotEntity slot, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task InsertDeckSlotAsync(DeckSlotEntity slot, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            await q.Query("deck_slots")
+            await _db.Query("deck_slots")
                      .InsertAsync(new
                      {
                          slot.deck_id,
@@ -90,11 +88,9 @@ namespace WebServerProject.CSR.Repositories.Deck
                      }, tx);
         }
 
-        public async Task<int> CreateDeckAsync(DeckEntity deck, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task<int> CreateDeckAsync(DeckEntity deck, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            int deckId = await q.Query("decks")
+            int deckId = await _db.Query("decks")
                 .InsertGetIdAsync<int>(new
                 {
                     deck.user_id,
@@ -106,11 +102,9 @@ namespace WebServerProject.CSR.Repositories.Deck
             return deckId;
         }
 
-        public async Task CreateDeckSlotAsync(DeckSlotEntity deckSlot, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task CreateDeckSlotAsync(DeckSlotEntity deckSlot, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            await q.Query("deck_slots")
+            await _db.Query("deck_slots")
                 .InsertAsync(new
                 {
                     deckSlot.deck_id,
@@ -119,6 +113,15 @@ namespace WebServerProject.CSR.Repositories.Deck
                 }, tx);
         }
 
-        
+        public async Task<DeckEntity> GetDeckForUpdateAsync(int userId, int deckIndex, IDbTransaction? tx = null)
+        {
+            var sql = "SELECT * FROM decks WHERE user_id = @userId AND deck_index = @deckIndex FOR UPDATE";
+
+            return await _db.Connection.QueryFirstOrDefaultAsync<DeckEntity>(
+                sql,
+                new { userId, deckIndex },
+                tx
+            );
+        }
     }
 }

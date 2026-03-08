@@ -1,4 +1,5 @@
-﻿using WebServerProject.CSR.Repositories.Enemy;
+﻿using SqlKata.Execution;
+using WebServerProject.CSR.Repositories.Enemy;
 using WebServerProject.CSR.Repositories.Stage;
 using WebServerProject.Models.DTOs.Enemy;
 using WebServerProject.Models.DTOs.Stage;
@@ -13,13 +14,16 @@ namespace WebServerProject.CSR.Services.Stage
 
     public class StageService : IStageService
     {
+        private readonly QueryFactory _db;
         private readonly IStageRepository _stageRepository;
         private readonly IEnemyRepository _enemyRepository;
 
         public StageService(
+            QueryFactory db,
             IStageRepository stageRepository,
             IEnemyRepository enemyRepository)
         {
+            _db = db;
             _stageRepository = stageRepository;
             _enemyRepository = enemyRepository;
         }   
@@ -45,6 +49,7 @@ namespace WebServerProject.CSR.Services.Stage
             }
 
             // 적 Teplate 조회
+            // N + 1 쿼리 발생
             List<StageEnemyDTO> enemyDTOs = new List<StageEnemyDTO>();
             foreach (var e in stageEnemies)
             {

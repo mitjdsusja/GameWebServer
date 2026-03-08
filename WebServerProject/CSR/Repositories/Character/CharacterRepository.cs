@@ -7,13 +7,13 @@ namespace WebServerProject.CSR.Repositories.Character
 {
     public interface ICharacterRepository
     {
-        public Task<UserCharacter> GetUserCharacterAsync(int userId, int characterTemplateId, QueryFactory? db = null, IDbTransaction? tx = null);
-        public Task<List<UserCharacter>> GetUserCharacterListAsync(int userId);
-        public Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userCharacterIds);
-        public Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds);
-        public Task<UserCharacter> GetUserCharacterAsync(int userCharacterId, QueryFactory? db = null, IDbTransaction? tx = null);
-        public Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId);
-        public Task<int> AddCharacterToUserAsync(int userId, int characterId, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task<UserCharacter> GetUserCharacterAsync(int userId, int characterTemplateId, IDbTransaction? tx = null);
+        public Task<List<UserCharacter>> GetUserCharacterListAsync(int userId, IDbTransaction? tx = null);
+        public Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userCharacterIds, IDbTransaction? tx = null);
+        public Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds, IDbTransaction? tx = null);
+        public Task<UserCharacter> GetUserCharacterAsync(int userCharacterId, IDbTransaction? tx = null);
+        public Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId, IDbTransaction? tx = null);
+        public Task<int> AddCharacterToUserAsync(int userId, int characterId, IDbTransaction? tx = null);
     }
 
     public class CharacterRepository : ICharacterRepository
@@ -24,11 +24,10 @@ namespace WebServerProject.CSR.Repositories.Character
         {
             _db = db;
         }
-        public async Task<UserCharacter> GetUserCharacterAsync(int userId, int userCharacterId, QueryFactory? db = null, IDbTransaction? tx = null)
-        {
-            var q = db ?? _db;
 
-            var userCharacter = await q.Query("user_characters")
+        public async Task<UserCharacter> GetUserCharacterAsync(int userId, int userCharacterId, IDbTransaction? tx = null)
+        {
+            var userCharacter = await _db.Query("user_characters")
                                              .Where("id", userCharacterId)
                                              .Where("user_id", userId)
                                              .FirstOrDefaultAsync<UserCharacter>(tx);
@@ -36,7 +35,7 @@ namespace WebServerProject.CSR.Repositories.Character
             return userCharacter;
         }
 
-        public async Task<List<UserCharacter>> GetUserCharacterListAsync(int userId)
+        public async Task<List<UserCharacter>> GetUserCharacterListAsync(int userId, IDbTransaction? tx = null)
         {
             // 유저 캐릭터 목록 조회
             var characters = await _db.Query("user_characters")
@@ -46,7 +45,7 @@ namespace WebServerProject.CSR.Repositories.Character
             return characters.ToList();
         }
 
-        public async Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userCharacerIds)
+        public async Task<List<UserCharacter>> GetUserCharacterListAsync(List<int> userCharacerIds, IDbTransaction? tx = null)
         {
             var characters = await _db.Query("user_characters")
                                       .WhereIn("id", userCharacerIds)
@@ -55,7 +54,7 @@ namespace WebServerProject.CSR.Repositories.Character
             return characters.ToList();
         }
 
-        public async Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds)
+        public async Task<List<CharacterTemplate>> GetCharacterTemplateListAsync(List<int> templateIds, IDbTransaction? tx = null)
         {
             // 캐릭터 템플릿 목록 조회
             var templates = await _db.Query("character_templates")
@@ -64,11 +63,9 @@ namespace WebServerProject.CSR.Repositories.Character
             return templates.ToList();
         }
 
-        public async Task<int> AddCharacterToUserAsync(int userId, int characterId, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task<int> AddCharacterToUserAsync(int userId, int characterId, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            var result = await q.Query("user_characters")
+            var result = await _db.Query("user_characters")
                               .InsertAsync(new
                               {
                                   user_id = userId,
@@ -82,17 +79,15 @@ namespace WebServerProject.CSR.Repositories.Character
             return result;
         }
 
-        public async Task<UserCharacter> GetUserCharacterAsync(int userCharacterId, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task<UserCharacter> GetUserCharacterAsync(int userCharacterId, IDbTransaction? tx = null)
         {
-            var q = db ?? _db;
-
-            var result = await q.Query("user_characters")
+            var result = await _db.Query("user_characters")
                                   .Where("id", userCharacterId)
                                   .FirstOrDefaultAsync<UserCharacter>(tx);
             return result;  
         }
 
-        public async Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId)
+        public async Task<CharacterTemplate> GetCharacterTemplateAsync(int templateId, IDbTransaction? tx = null)
         {
             var result = await _db.Query("character_templates")
                                   .Where("id", templateId)

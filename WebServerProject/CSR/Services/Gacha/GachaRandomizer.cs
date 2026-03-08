@@ -8,7 +8,7 @@ namespace WebServerProject.CSR.Services.Gacha
 {
     public interface IGachaRandomizer
     {
-        public Task<GachaPool?> SelectItemAsync(GachaMaster gacha, int pityStack, QueryFactory? db = null, IDbTransaction? tx = null);
+        public Task<GachaPool?> SelectItemAsync(string gachaId, IDbTransaction? tx = null);
     }
 
     public class GachaRandomizer : IGachaRandomizer
@@ -24,30 +24,25 @@ namespace WebServerProject.CSR.Services.Gacha
             _gachaRepository = gachaRepository;
         }
 
-        public async Task<GachaPool?> SelectItemAsync(GachaMaster gacha, int pityStack, QueryFactory? db = null, IDbTransaction? tx = null)
+        public async Task<GachaPool?> SelectItemAsync(string gachaCode, IDbTransaction? tx = null)
         {
-            // 가챠 확률 불러오기
-            List<GachaRarityRate> baseRarityRates = await _gachaRepository.GetGachaRarityRateListAsync(gacha.id , db, tx);
-            if (baseRarityRates == null || baseRarityRates.Count == 0)
+            // 가챠 정보 불러오기
+            var gacha = await _gachaRepository.GetGachaAsync(gachaCode, tx);
+            if(gacha == null)
             {
                 return null;
             }
 
-            // 천장 시스템을 적용하여 확률 동적 재계산
-            var adjustedRates = ApplyHybridPity(
-                baseRarityRates,
-                pityStack,
-                gacha.soft_pity_threshold,
-                gacha.hard_pity_threshold,
-                gacha.pity_bonus_rate,
-                gacha.pity_target_rarity
-            );
-
-            // 재계산된 확률 리스트를 등급순으로 정렬
-            adjustedRates = adjustedRates.OrderBy(r => r.rarity).ToList();
+            // 가챠 확률 불러오기
+            var rarityRates = await _gachaRepository.GetGachaRarityRateListAsync(gacha.id, tx);
+            if(rarityRates == null || rarityRates.Count == 0)
+            {
+                return null;
+            }
+            rarityRates = rarityRates.OrderBy(r => r.rarity).ToList();
 
             // 각 희귀도 확률 합산
-            var totalRate = adjustedRates.Sum(r => r.rate);
+            var totalRate = rarityRates.Sum(r => r.rate);
             if (totalRate <= 0)
             {
                 return null;
@@ -60,7 +55,7 @@ namespace WebServerProject.CSR.Services.Gacha
             double currentCumulativeProbability = 0.0;
             int selectedRarity = 1; // 기본값
 
-            foreach (var rarityInfo in adjustedRates)
+            foreach (var rarityInfo in rarityRates)
             {
                 currentCumulativeProbability += rarityInfo.rate;
 
