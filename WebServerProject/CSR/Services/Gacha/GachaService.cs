@@ -82,8 +82,8 @@ namespace WebServerProject.CSR.Services
             }
 
             // 뽑기 정보 확인
-            var gacha = await _gachaRepository.GetGachaAsync(gachaId);
-            if (gacha == null)
+            var gachaMaster = await _gachaRepository.GetGachaAsync(gachaId);
+            if (gachaMaster == null)
             {
                 return new GachaDrawResultDTO
                 {
@@ -118,7 +118,7 @@ namespace WebServerProject.CSR.Services
                         Message = "유저 재화 정보를 찾을 수 없습니다."
                     };
                 }
-                else if (resource.diamond < gacha.cost_amount)
+                else if (resource.diamond < gachaMaster.cost_amount)
                 {
                     return new GachaDrawResultDTO
                     {
@@ -129,11 +129,11 @@ namespace WebServerProject.CSR.Services
                 }
 
                 // 유저의 천장 스택 조회
-                UserGachaPity pityData = await _gachaRepository.GetUserGachaPityStackForUpdateAsync(userId, gachaMaster.id, db, tx);
+                UserGachaPity pityData = await _gachaRepository.GetUserGachaPityStackAsync(userId, gachaMaster.id, tx);
                 int currentPityStack = pityData != null ? pityData.pity_stack : 0; // 첫 뽑기인 경우 0으로 초기화
 
                 // 뽑기 로직
-                var selectedItem = await _gachaRandomizer.SelectItemAsync(gachaId, tx);
+                var selectedItem = await _gachaRandomizer.SelectItemAsync(gachaId, currentPityStack, tx);
                 if (selectedItem == null)
                 {
                     return new GachaDrawResultDTO
@@ -147,7 +147,7 @@ namespace WebServerProject.CSR.Services
                 UserResources userResources = new UserResources
                 {
                     gold = resource.gold,
-                    diamond = resource.diamond - gacha.cost_amount
+                    diamond = resource.diamond - gachaMaster.cost_amount
                 };
                 var updateResourcesResult = await _userRepository.UpdateResourcesAsync(user.id, userResources, tx);
                 if (updateResourcesResult == false)
@@ -190,7 +190,7 @@ namespace WebServerProject.CSR.Services
                     RemainingResources = new UserResourcesDTO
                     {
                         Gold = resource.gold,
-                        Diamond = resource.diamond - gacha.cost_amount,
+                        Diamond = resource.diamond - gachaMaster.cost_amount,
                     }
                 };
             }

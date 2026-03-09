@@ -12,6 +12,7 @@ namespace WebServerProject.CSR.Repositories.Gacha
         public Task<GachaMaster> GetGachaAsync(string gachaCode, IDbTransaction? tx = null);
         public Task<List<GachaRarityRate>> GetGachaRarityRateListAsync(int gachaId, IDbTransaction? tx = null);
         public Task<List<GachaPool>> GetGachaPoolByRarityAsync(int gachaId, int rarity, IDbTransaction? tx = null);
+        public Task<UserGachaPity> GetUserGachaPityStackAsync(int userId, int gachaId, IDbTransaction? tx = null);
     }
     public class GachaRepository : IGachaRepository
     {
@@ -115,6 +116,15 @@ namespace WebServerProject.CSR.Repositories.Gacha
                 new { UserId = userId, GachaId = gachaId },
                 tx
             );
+        }
+
+        public Task<UserGachaPity> GetUserGachaPityStackAsync(int userId, int gachaId, IDbTransaction? tx = null)
+        {
+            var result =  _db.Query("user_gacha_pities")
+                            .Where("user_id", userId)
+                            .Where("gacha_id", gachaId)
+                            .FirstOrDefaultAsync<UserGachaPity>(tx);
+            return result;
         }
     }
 }
